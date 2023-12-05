@@ -1,0 +1,27 @@
+[package]
+name = "pwr-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hamid R. K. Pishghadam <kaveh@riseup.net>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/pwrlabs/pwrrs"
+homepage = "https://pwrlabs.io/"
+description = """
+PWR Chain Rust Tool
+"""
+keywords = ["pwr", "sdk", "tool", "async"]
+rust-version = "1.63.0"
+
+[dependencies]
+secp256k1 = { version = "0.25.0", features = ["rand", "recovery"] }
+rand = "0.8.5"
+reqwest = { version = "0.11.22", features = ["json"] }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+sha3 = "0.10.8"
+url = "2.5.0"
+hex = "0.4.3"
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
