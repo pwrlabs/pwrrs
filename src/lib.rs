@@ -1,7 +1,7 @@
 //! PWR chain Rust SDK
 //!
 //! # Create wallet
-//! ```
+//! ```ignore
 //! # use pwr_rs::wallet::Wallet;
 //! let wallet = Wallet::random();
 //! ```
@@ -16,5 +16,8 @@
 //! ```
 
 pub mod block;
+#[cfg(feature = "rpc")]
 pub mod rpc;
 pub mod wallet;
+
+pub use wallet::{PublicKey, Wallet};

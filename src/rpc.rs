@@ -5,32 +5,58 @@ use url::Url;
 
 use crate::{
     block::{Block, Delegator, NewTransactionData, Validator},
-    wallet::PrivateKey,
+    wallet::Wallet,
 };
 
 const DEFAULT_FEE_PER_BYTE: u64 = 100;
+const DEFAULT_CHAIN_ID: u8 = 0;
 
 pub struct RPC {
     http_client: Client,
     node_url: Url,
+    chain_id: u8,
 
     fee_per_byte: u64,
 }
 
 impl RPC {
     /// Creates a new RPC.
-    pub fn new<S>(node_url: S) -> Result<Self, &'static str>
+    pub async fn new<S>(node_url: S) -> Result<Self, RpcError>
     where
         S: AsRef<str>,
     {
-        let node_url =
-            Url::parse(node_url.as_ref()).map_err(|_| "Invalid node url, should be valid url")?;
+        let node_url = Url::parse(node_url.as_ref()).map_err(|_| RpcError::InvalidRpcUrl)?;
 
-        Ok(Self {
+        let mut s = Self {
             node_url,
             fee_per_byte: DEFAULT_FEE_PER_BYTE,
             http_client: Client::new(),
-        })
+            chain_id: DEFAULT_CHAIN_ID,
+        };
+
+        let chain_id = {
+            #[derive(Deserialize)]
+            struct Resp {
+                #[serde(rename = "chainId")]
+                chain_id: u8,
+            }
+
+            let response = s
+                .http_client
+                .get(s.node_url.join("/chainId/").unwrap())
+                .send()
+                .await
+                .map_err(RpcError::Network)?;
+            response
+                .json::<Resp>()
+                .await
+                .map_err(RpcError::Deserialization)?
+                .chain_id
+        };
+
+        s.chain_id = chain_id;
+
+        Ok(s)
     }
 
     /// Retrieves the current RPC node URL being used.
@@ -198,17 +224,6 @@ impl RPC {
         .map(|r: Response| r.delegators)
     }
 
-    /// Queries the RPC node to get the owner of a specific VM.
-    pub async fn owner_of_vm(&self, vm_id: u64) -> Result<String, RpcError> {
-        #[derive(Deserialize)]
-        struct Response {
-            owner: String,
-        }
-        self.call_rpc_get(&format!("/ownerOfVmId/?vmId={}", vm_id))
-            .await
-            .map(|r: Response| r.owner)
-    }
-
     /// Fetches and updates the current fee per byte from the RPC node.
     pub async fn update_fee_per_byte(&mut self) -> Result<(), RpcError> {
         #[derive(Deserialize)]
@@ -230,7 +245,7 @@ impl RPC {
     pub async fn broadcast_transaction(
         &self,
         transaction: &NewTransactionData,
-        private_key: &PrivateKey,
+        wallet: &Wallet,
     ) -> Result<String, RpcError> {
         #[derive(Deserialize)]
         struct Responce {
@@ -242,11 +257,11 @@ impl RPC {
             txn: String,
         }
 
-        let nonce = self.nonce_of_address(&private_key.address()).await?;
+        let nonce = self.nonce_of_address(&wallet.address()).await?;
 
         let mut hasher = Keccak256::new();
         let txn_bytes = transaction
-            .serialize_for_broadcast(nonce, private_key)
+            .serialize_for_broadcast(nonce, self.chain_id, wallet)
             .map_err(|e| RpcError::FailedToBroadcastTransaction(e.to_string()))?;
         hasher.update(&txn_bytes);
         let txn_hash = hasher.finalize();
@@ -309,6 +324,7 @@ impl RPC {
 #[derive(Debug)]
 pub enum RpcError {
     FailedToBroadcastTransaction(String),
+    InvalidRpcUrl,
     Network(reqwest::Error),
     Deserialization(reqwest::Error),
 }
