@@ -1,4 +1,4 @@
-use pwr_rs::{block::NewTransactionData, rpc::RPC, wallet::PrivateKey};
+use pwr_rs::{transaction::types::NewTransactionData, rpc::types::RPC, wallet::PrivateKey};
 
 #[tokio::main]
 async fn main() {

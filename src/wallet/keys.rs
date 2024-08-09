@@ -34,7 +34,7 @@ impl PrivateKey {
         let hashed = hasher.finalize();
 
         let (recovery_id, signature) = secp
-            .sign_ecdsa_recoverable(&Message::from_slice(&hashed)?, &self.secret_key)
+            .sign_ecdsa_recoverable(&Message::from_digest_slice(&hashed)?, &self.secret_key)
             .serialize_compact();
         let mut sign_bytes = Vec::from(signature);
         sign_bytes.push(27u8);
