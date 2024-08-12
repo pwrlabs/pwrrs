@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-
 use crate::transaction::types::Transaction;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,6 +11,5 @@ pub struct Block {
     pub timestamp: u64,
     pub block_hash: String,
     pub block_submitter: String,
-    pub success: bool,
     pub transactions: Vec<Transaction>,
 }

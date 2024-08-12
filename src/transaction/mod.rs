@@ -1,23 +1,24 @@
 pub mod types;
+pub mod hex_serde;
+pub mod stream;
 
 use self::types::NewTransactionData;
-use crate::wallet::PrivateKey;
+use crate::Wallet;
 
 impl NewTransactionData {
     pub fn serialize_for_broadcast(
         &self,
         nonce: u32,
-        private_key: &PrivateKey,
+        chain_id: u8,
+        wallet: &Wallet,
     ) -> Result<Vec<u8>, &'static str> {
         let mut bytes = Vec::new();
         bytes.push(self.identifier());
+        bytes.extend(chain_id.to_be_bytes());
         bytes.extend(nonce.to_be_bytes());
         bytes.extend(self.transaction_bytes()?);
 
-        let signature = private_key
-            .sign_message(&bytes)
-            .map_err(|_| "Failed to sign message")?
-            .1;
+        let signature = wallet.sign(&bytes).map_err(|_| "Failed to sign message")?;
         bytes.extend(signature);
         Ok(bytes)
     }
