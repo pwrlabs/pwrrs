@@ -11,8 +11,8 @@ async fn main() {
 
     #[cfg(feature = "rpc")]
     {
-        use pwr_rs::block::NewTransactionData;
-        use pwr_rs::rpc::RPC;
+        use pwr_rs::transaction::types::NewTransactionData;
+        use pwr_rs::rpc::types::RPC;
 
         let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 
@@ -53,7 +53,7 @@ async fn main() {
         println!("ActiveValidators: {active_validators:?}");
 
         let new_trx = NewTransactionData::Transfer {
-            amount: 10,
+            amount: 1000,
             recipient: "61bd8fc1e30526aaf1c4706ada595d6d236d9883".into(),
         };
         let trx_hash = rpc.broadcast_transaction(&new_trx, &wallet).await.unwrap();

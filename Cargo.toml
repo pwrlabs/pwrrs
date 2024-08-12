@@ -1,6 +1,6 @@
 [package]
 name = "pwr-rs"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Hamid R. K. Pishghadam <kaveh@riseup.net>"]
 license = "MIT OR Apache-2.0"
@@ -18,7 +18,7 @@ k256 = { version = "0.13", default-features = false, features = ["ecdsa", "alloc
 hex = "0.4.3"
 sha3 = "0.10.8"
 rand = { version = "0.8.5", optional = true }
-reqwest = { version = "0.11.22", features = ["json"], optional = true }
+reqwest = { version = "0.12.5", features = ["json"], optional = true }
 serde = { version = "1.0.193", features = ["derive"] }
 serde_json = { version = "1.0.108", optional = true }
 borsh = { version = "1.5", features = ["derive"], optional = true }

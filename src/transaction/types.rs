@@ -1,20 +1,18 @@
-use std::net::IpAddr;
-
-use crate::wallet::Wallet;
 use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Block {
-    pub transaction_count: u32,
-    pub block_size: u32,
-    pub block_number: u32,
-    pub block_reward: u64,
-    pub timestamp: u64,
-    pub block_hash: String,
-    pub block_submitter: String,
-    pub transactions: Vec<Transaction>,
-}
+use crate::transaction::hex_serde::hex_serde;
+use crate::transaction::stream::{
+    default_hex,
+    default_fee_per_byte,
+    default_max_block_size,
+    default_max_txn_size,
+    default_overall_burn_percentage,
+    default_reward_per_year,
+    default_validator_count_limit,
+    default_joining_fee,
+    default_claiming_fee,
+    default_fee_share,
+    default_proposal_status
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -324,72 +322,6 @@ pub enum ConcreteTransaction {
     },
 }
 
-fn default_hex() -> String {
-    "0x".to_string()
-}
-
-fn default_fee_per_byte() -> u64 {
-    8
-}
-
-fn default_max_block_size() -> u32 {
-    4
-}
-
-fn default_max_txn_size() -> u32 {
-    8
-}
-
-fn default_overall_burn_percentage() -> u32 {
-    4
-}
-
-fn default_reward_per_year() -> u64 {
-    8
-}
-
-fn default_validator_count_limit() -> u32 {
-    4
-}
-
-fn default_joining_fee() -> u64 {
-    8
-}
-
-fn default_claiming_fee() -> u64 {
-    8
-}
-
-fn default_fee_share() -> u64 {
-    8
-}
-
-fn default_proposal_status() -> String {
-    "ongoing".to_string()
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Delegator {
-    pub address: String,
-    pub validator_address: String,
-    pub shares: u64,
-    pub delegated_pwr: u64,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Validator {
-    pub address: String,
-    pub ip: IpAddr,
-    #[serde(default)]
-    pub bad_actor: bool,
-    pub voting_power: u64,
-    pub total_shares: u64,
-    pub delegators_count: u32,
-    #[serde(default)]
-    pub is_active: bool,
-}
-
 pub enum NewTransactionData {
     Transfer {
         amount: u64,
@@ -418,86 +350,4 @@ pub enum NewTransactionData {
     ClainVmID {
         vm_id: u64,
     },
-}
-
-impl NewTransactionData {
-    pub fn serialize_for_broadcast(
-        &self,
-        nonce: u32,
-        chain_id: u8,
-        wallet: &Wallet,
-    ) -> Result<Vec<u8>, &'static str> {
-        let mut bytes = Vec::new();
-        bytes.push(self.identifier());
-        bytes.extend(chain_id.to_be_bytes());
-        bytes.extend(nonce.to_be_bytes());
-        bytes.extend(self.transaction_bytes()?);
-
-        let signature = wallet.sign(&bytes).map_err(|_| "Failed to sign message")?;
-        bytes.extend(signature);
-        Ok(bytes)
-    }
-
-    fn transaction_bytes(&self) -> Result<Vec<u8>, &'static str> {
-        let mut bytes = Vec::new();
-
-        match self {
-            NewTransactionData::Transfer { amount, recipient } => {
-                bytes.extend(amount.to_be_bytes());
-                bytes.extend(hex::decode(recipient).map_err(|_| "Invalid recipient address")?);
-            }
-
-            NewTransactionData::VmData { vm_id, data } => {
-                bytes.extend(vm_id.to_be_bytes());
-                bytes.extend(data);
-            }
-            NewTransactionData::Delegate { amount, validator } => {
-                bytes.extend(amount.to_be_bytes());
-                bytes.extend(hex::decode(validator).map_err(|_| "Invalid validator address")?);
-            }
-            NewTransactionData::Whithdaw { shares, validator } => {
-                bytes.extend(shares.to_be_bytes());
-                bytes.extend(hex::decode(validator).map_err(|_| "Invalid validator address")?);
-            }
-            NewTransactionData::ClainVmID { vm_id } => bytes.extend(vm_id.to_be_bytes()),
-        }
-
-        Ok(bytes)
-    }
-
-    fn identifier(&self) -> u8 {
-        match self {
-            NewTransactionData::Transfer { .. } => 0,
-            NewTransactionData::Delegate { .. } => 3,
-            NewTransactionData::Whithdaw { .. } => 4,
-            NewTransactionData::VmData { .. } => 5,
-            NewTransactionData::ClainVmID { .. } => 6,
-        }
-    }
-}
-
-mod hex_serde {
-    use serde::{Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<S>(data: &Vec<u8>, s: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let st = hex::encode(data);
-        s.serialize_str(&st)
-    }
-
-    pub fn deserialize<'de, D>(d: D) -> Result<Vec<u8>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let hex_str = String::deserialize(d)?;
-        if hex_str.len() > 2 && (&hex_str[..2] == "0x" || &hex_str[..2] == "0X") {
-            hex::decode(&hex_str[2..])
-                .map_err(|e| serde::de::Error::custom(format!("Expected hex string: {e}")))
-        } else {
-            hex::decode(hex_str)
-                .map_err(|e| serde::de::Error::custom(format!("Expected hex string: {e}")))
-        }
-    }
 }
