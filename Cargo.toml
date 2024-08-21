@@ -1,6 +1,6 @@
 [package]
 name = "pwr-rs"
-version = "0.1.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Hamid R. K. Pishghadam <kaveh@riseup.net>"]
 license = "MIT OR Apache-2.0"
@@ -14,14 +14,21 @@ keywords = ["pwr", "sdk", "tool", "async"]
 rust-version = "1.63.0"
 
 [dependencies]
-secp256k1 = { version = "0.25.0", features = ["rand", "recovery"] }
-rand = "0.8.5"
-reqwest = { version = "0.11.22", features = ["json"] }
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
-sha3 = "0.10.8"
-url = "2.5.0"
+k256 = { version = "0.13", default-features = false, features = ["ecdsa", "alloc"] }
 hex = "0.4.3"
+sha3 = "0.10.8"
+rand = { version = "0.8.5", optional = true }
+reqwest = { version = "0.12.5", features = ["json"], optional = true }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = { version = "1.0.108", optional = true }
+borsh = { version = "1.5", features = ["derive"], optional = true }
+url = { version = "2.5.0", optional = true }
+
+[features]
+default = ["rpc", "rand"]
+rand = ["dep:rand"]
+borsh = ["dep:borsh"]
+rpc = ["dep:serde_json", "dep:url", "dep:reqwest"]
 
 [dev-dependencies]
 tokio = { version = "1.0", features = ["full"] }
