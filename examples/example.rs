@@ -11,8 +11,8 @@ async fn main() {
 
     #[cfg(feature = "rpc")]
     {
-        use pwr_rs::transaction::types::NewTransactionData;
-        use pwr_rs::rpc::types::RPC;
+        use pwr_rs::transaction::NewTransactionData;
+        use pwr_rs::RPC;
 
         let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 

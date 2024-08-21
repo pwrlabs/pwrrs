@@ -2,7 +2,7 @@ pub mod types;
 pub mod hex_serde;
 pub mod stream;
 
-use self::types::NewTransactionData;
+pub use self::types::NewTransactionData;
 use crate::Wallet;
 
 impl NewTransactionData {

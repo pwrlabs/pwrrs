@@ -29,6 +29,3 @@ default = ["rpc", "rand"]
 rand = ["dep:rand"]
 borsh = ["dep:borsh"]
 rpc = ["dep:serde_json", "dep:url", "dep:reqwest"]
-
-[dev-dependencies]
-tokio = { version = "1.0", features = ["full"] }

@@ -5,10 +5,8 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
 use url::Url;
 
-use self::types::{
-    RPC,
-    RpcError
-};
+pub use self::types::RPC;
+use self::types::RpcError;
 
 use crate::{
     block::Block,
