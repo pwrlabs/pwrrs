@@ -1,23 +1,25 @@
+pub mod types;
+
 use reqwest::{Client, StatusCode};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
 use url::Url;
 
+use self::types::{
+    RPC,
+    RpcError
+};
+
 use crate::{
-    block::{Block, Delegator, NewTransactionData, Validator},
-    wallet::Wallet,
+    block::Block,
+    transaction::types::NewTransactionData,
+    delegator::Delegator,
+    validator::Validator,
+    wallet::types::Wallet
 };
 
 const DEFAULT_FEE_PER_BYTE: u64 = 100;
 const DEFAULT_CHAIN_ID: u8 = 0;
-
-pub struct RPC {
-    http_client: Client,
-    node_url: Url,
-    chain_id: u8,
-
-    fee_per_byte: u64,
-}
 
 impl RPC {
     /// Creates a new RPC.
@@ -319,12 +321,4 @@ impl RPC {
             response.json().await.map_err(RpcError::Deserialization)?,
         ))
     }
-}
-
-#[derive(Debug)]
-pub enum RpcError {
-    FailedToBroadcastTransaction(String),
-    InvalidRpcUrl,
-    Network(reqwest::Error),
-    Deserialization(reqwest::Error),
 }
