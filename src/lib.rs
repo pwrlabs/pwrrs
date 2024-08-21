@@ -24,3 +24,4 @@ pub mod rpc;
 pub mod wallet;
 
 pub use wallet::types::{PublicKey, Wallet};
+pub use rpc::RPC;
