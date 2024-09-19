@@ -39,13 +39,6 @@ How to [Guides](https://pwrlabs.io) 🔜 & [API](https://pwrlabs.io) 💻
 
 Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-components/) 🎮
 
-
-## 🌐 Documentation
-
-How to [Guides](https://pwrlabs.io) 🔜 & [API](https://pwrlabs.io) 💻
-
-Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-components/) 🎮
-
 ## 💫 Getting Started
 
 **Import the library:**
