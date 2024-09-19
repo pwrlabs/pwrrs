@@ -25,32 +25,32 @@ async fn main() {
         let blocks_count = rpc.block_count().await.unwrap();
         println!("BlocksCount: {blocks_count}");
 
-        // let latest_block_count = rpc.latest_block_count().await.unwrap();
-        // println!("LatestBlockCount: {latest_block_count}");
+        let latest_block_count = rpc.latest_block_count().await.unwrap();
+        println!("LatestBlockCount: {latest_block_count}");
 
-        // let block = rpc.block_by_number(1337).await.unwrap();
-        // println!("Block: {block:?}");
+        let block = rpc.block_by_number(1337).await.unwrap();
+        println!("Block: {block:?}");
 
-        // let active_voting_power = rpc.active_voting_power().await.unwrap();
-        // println!("ActiveVotingPower: {active_voting_power}");
+        let active_voting_power = rpc.active_voting_power().await.unwrap();
+        println!("ActiveVotingPower: {active_voting_power}");
 
-        // let total_validators_count = rpc.total_validator_count().await.unwrap();
-        // println!("TotalValidatorsCount: {total_validators_count}");
+        let total_validators_count = rpc.total_validator_count().await.unwrap();
+        println!("TotalValidatorsCount: {total_validators_count}");
 
-        // let standby_validators_count = rpc.standby_validator_count().await.unwrap();
-        // println!("StandbyValidatorsCount: {standby_validators_count}");
+        let standby_validators_count = rpc.standby_validator_count().await.unwrap();
+        println!("StandbyValidatorsCount: {standby_validators_count}");
 
-        // let active_validators_count = rpc.active_validator_count().await.unwrap();
-        // println!("ActiveValidatorsCount: {active_validators_count}");
+        let active_validators_count = rpc.active_validator_count().await.unwrap();
+        println!("ActiveValidatorsCount: {active_validators_count}");
 
-        // let all_validators = rpc.all_validators().await.unwrap();
-        // println!("AllValidators: {all_validators:?}");
+        let all_validators = rpc.all_validators().await.unwrap();
+        println!("AllValidators: {all_validators:?}");
 
-        // let standby_validators = rpc.standby_validators().await.unwrap();
-        // println!("StandbyValidators: {standby_validators:?}");
+        let standby_validators = rpc.standby_validators().await.unwrap();
+        println!("StandbyValidators: {standby_validators:?}");
 
-        // let active_validators = rpc.active_validators().await.unwrap();
-        // println!("ActiveValidators: {active_validators:?}");
+        let active_validators = rpc.active_validators().await.unwrap();
+        println!("ActiveValidators: {active_validators:?}");
 
         let new_trx = NewTransactionData::Transfer {
             amount: 1000,
@@ -59,15 +59,12 @@ async fn main() {
         let trx_hash = rpc.broadcast_transaction(&new_trx, &wallet).await.unwrap();
         println!("Transaction Hash: {trx_hash}");
 
-        // let data = vec!["Hello World!"];
-        // let data_as_bytes: Vec<u8> = data.into_iter()
-        //     .flat_map(|s| s.as_bytes().to_vec())
-        //     .collect();
-        // let new_tx = NewTransactionData::VmData { vm_id: 123, data: data_as_bytes };
-        // let tx_hash = rpc.broadcast_transaction(&new_tx, &wallet).await.unwrap();
-        // println!("Transaction Hash: {tx_hash}");
-
-        let r = rpc.balance_of_address("0x61bd8fc1e30526aaf1c4706ada595d6d236d9883").await.unwrap();
-        println!("data {r}");
+        let data = vec!["Hello World!"];
+        let data_as_bytes: Vec<u8> = data.into_iter()
+            .flat_map(|s| s.as_bytes().to_vec())
+            .collect();
+        let new_tx = NewTransactionData::VmData { vm_id: 123, data: data_as_bytes };
+        let tx_hash = rpc.broadcast_transaction(&new_tx, &wallet).await.unwrap();
+        println!("Transaction Hash: {tx_hash}");
     }
 }
