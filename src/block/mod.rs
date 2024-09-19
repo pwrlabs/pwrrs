@@ -5,7 +5,7 @@ use crate::transaction::types::Transaction;
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     pub transaction_count: u32,
-    pub block_size: u32,
+    pub size: u32,
     pub block_number: u32,
     pub block_reward: u64,
     pub timestamp: u64,
