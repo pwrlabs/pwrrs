@@ -6,13 +6,13 @@ It provides an easy interface for wallet management and sending transactions on 
 <div align="center">
 <!-- markdownlint-restore -->
 
-[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/pwrlabs/pwrpy/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![Pull Requests welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?style=flat-square)](https://github.com/pwrlabs/pwrrs/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![crates-badge](https://img.shields.io/crates/v/pwr-rs.svg)](https://crates.io/crates/pwr-rs)
-<a href="https://github.com/pwrlabs/pwrpy/blob/main/LICENSE/">
+<a href="https://github.com/pwrlabs/pwrrs/blob/main/LICENSE/">
   <img src="https://img.shields.io/badge/license-MIT-black">
 </a>
-<!-- <a href="https://github.com/pwrlabs/pwrpy/stargazers">
-  <img src='https://img.shields.io/github/stars/pwrlabs/pwrpy?color=yellow' />
+<!-- <a href="https://github.com/pwrlabs/pwrrs/stargazers">
+  <img src='https://img.shields.io/github/stars/pwrlabs/pwrrs?color=yellow' />
 </a> -->
 <a href="https://pwrlabs.io/">
   <img src="https://img.shields.io/badge/powered_by-PWR Chain-navy">
