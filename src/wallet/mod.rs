@@ -8,6 +8,10 @@ use k256::ecdsa::{
 use sha3::{Digest, Keccak256};
 
 use crate::wallet::types::{PublicKey, Wallet};
+use crate::transaction::NewTransactionData;
+use crate::rpc::{RPC};
+
+const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
 
 impl Wallet {
     #[cfg(feature = "rand")]
@@ -66,6 +70,54 @@ impl Wallet {
         let public_key = self.public_key().verifying_key.to_encoded_point(false);
         let digest = Keccak256::new_with_prefix(&public_key.as_bytes()[1..]).finalize();
         format!("0x{}", hex::encode_upper(&digest[12..]))
+    }
+
+    pub async fn transfer_pwr(&self, amount: u64, recipient: String) -> String {
+        let tx = NewTransactionData::Transfer {
+            amount: amount,
+            recipient: recipient,
+        };
+        let hash = (self.get_rpc().await).broadcast_transaction(&tx, &self).await.unwrap();
+        return hash;
+    }
+
+    pub async fn send_vm_data(&self, vm_id: u64, data: Vec<u8>) -> String {
+        let new_tx = NewTransactionData::VmData {
+            vm_id: vm_id,
+            data: data,
+        };
+        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
+        return hash;
+    }
+
+    pub async fn claim_vm_id(&self, vm_id: u64) -> String {
+        let new_tx = NewTransactionData::ClaimVmID {
+            vm_id: vm_id,
+        };
+        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
+        return hash;
+    }
+
+    pub async fn delegate(&self, amount: u64, to: String) -> String {
+        let new_tx = NewTransactionData::Delegate {
+            amount: amount,
+            validator: to,
+        };
+        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
+        return hash;
+    }
+
+    pub async fn withdraw(&self, shares: u64, validator: String) -> String {
+        let new_tx = NewTransactionData::Whithdaw {
+            shares: shares,
+            validator: validator,
+        };
+        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
+        return hash;
+    }
+
+    async fn get_rpc(&self) -> RPC {
+        RPC::new(NODE_URL).await.unwrap()
     }
 }
 

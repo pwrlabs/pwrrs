@@ -97,7 +97,7 @@ pub enum ConcreteTransaction {
         #[serde(default)]
         ip: String,
     },
-    ClainVmId {
+    ClaimVmID {
         #[serde(rename = "vmId", default)]
         vm_id: u64,
     },
@@ -347,7 +347,7 @@ pub enum NewTransactionData {
         validator: String,
     },
 
-    ClainVmID {
+    ClaimVmID {
         vm_id: u64,
     },
 }

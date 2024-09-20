@@ -47,7 +47,6 @@ Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-components/) ðŸ
 use pwr_rs::{
     Wallet, 
     RPC, 
-    transaction::NewTransactionData,
 };
 ```
 
@@ -80,23 +79,20 @@ let balance = rpc.balance_of_address(&address).await.unwrap();
 
 ```rust
 /// recipientAddress: 20 bytes address without `0x`
-let new_trx = NewTransactionData::Transfer { amount: 1000, recipient: "recipientAddress".into()};
-rpc.broadcast_transaction(&new_trx, &wallet).await.unwrap();
+wallet.transfer_pwr(1000, "recipientAddress".into()).await;
 ```
 
 Sending a transcation to the PWR Chain returns a Response object, which specified if the transaction was a success, and returns relevant data.
 If the transaction was a success, you can retrieive the transaction hash, if it failed, you can fetch the error.
 
 ```rust
-use pwr_rs::{Wallet, RPC, transaction::NewTransactionData};
+use pwr_rs::Wallet;
 async fn main() {
     let private_key = "0xac0974bec...f80";
     let wallet = Wallet::from_hex(&private_key).unwrap();
-    let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 
     /// recipientAddress: 20 bytes address without `0x`
-    let new_trx = NewTransactionData::Transfer { amount: 1000, recipient: "recipientAddress".into() };
-    let trx_hash = rpc.broadcast_transaction(&new_trx, &wallet).await.unwrap();
+    let trx_hash = wallet.transfer_pwr(1000, "recipientAddress".into()).await;
     println!("Transaction Hash: {trx_hash}");
 }
 ```
@@ -104,17 +100,15 @@ async fn main() {
 **Send data to a VM:**
 
 ```rust
-use pwr_rs::{Wallet, RPC, transaction::NewTransactionData};
+use pwr_rs::Wallet;
 async fn main() {
     let private_key = "0xac0974bec...f80";
     let wallet = Wallet::from_hex(&private_key).unwrap();
-    let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 
     let data = vec!["Hello World!"];
     let data_as_bytes: Vec<u8> = data.into_iter().flat_map(|s| s.as_bytes().to_vec()).collect();
 
-    let new_tx = NewTransactionData::VmData { vm_id: 123, data: data_as_bytes };
-    let tx_hash = rpc.broadcast_transaction(&new_tx, &wallet).await.unwrap();
+    let tx_hash = wallet.send_vm_data(123, data_as_bytes).await;
     println!("Transaction Hash: {tx_hash}");
 }
 ```

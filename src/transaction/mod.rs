@@ -44,7 +44,7 @@ impl NewTransactionData {
                 bytes.extend(shares.to_be_bytes());
                 bytes.extend(hex::decode(validator).map_err(|_| "Invalid validator address")?);
             }
-            NewTransactionData::ClainVmID { vm_id } => bytes.extend(vm_id.to_be_bytes()),
+            NewTransactionData::ClaimVmID { vm_id } => bytes.extend(vm_id.to_be_bytes()),
         }
 
         Ok(bytes)
@@ -56,7 +56,7 @@ impl NewTransactionData {
             NewTransactionData::Delegate { .. } => 3,
             NewTransactionData::Whithdaw { .. } => 4,
             NewTransactionData::VmData { .. } => 5,
-            NewTransactionData::ClainVmID { .. } => 6,
+            NewTransactionData::ClaimVmID { .. } => 6,
         }
     }
 }

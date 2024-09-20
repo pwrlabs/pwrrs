@@ -1,7 +1,6 @@
 use pwr_rs::{
     Wallet, 
     RPC, 
-    transaction::NewTransactionData,
 };
 
 #[tokio::main]
@@ -52,19 +51,17 @@ async fn main() {
         let active_validators = rpc.active_validators().await.unwrap();
         println!("ActiveValidators: {active_validators:?}");
 
-        let new_trx = NewTransactionData::Transfer {
-            amount: 1000,
-            recipient: "61bd8fc1e30526aaf1c4706ada595d6d236d9883".into(),
-        };
-        let trx_hash = rpc.broadcast_transaction(&new_trx, &wallet).await.unwrap();
+        let trx_hash = wallet.transfer_pwr(
+            1000,
+            "61bd8fc1e30526aaf1c4706ada595d6d236d9883".into(),
+        ).await;
         println!("Transaction Hash: {trx_hash}");
 
         let data = vec!["Hello World!"];
         let data_as_bytes: Vec<u8> = data.into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
-        let new_tx = NewTransactionData::VmData { vm_id: 123, data: data_as_bytes };
-        let tx_hash = rpc.broadcast_transaction(&new_tx, &wallet).await.unwrap();
+        let tx_hash = wallet.send_vm_data(1234, data_as_bytes).await;
         println!("Transaction Hash: {tx_hash}");
     }
 }
