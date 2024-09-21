@@ -11,15 +11,15 @@ async fn main() {
     let address = wallet.address();
     println!("Address: {address}");
 
+    let nonce = wallet.get_nonce().await;
+    println!("Nonce: {nonce}");
+
+    let balance = wallet.get_balance().await;
+    println!("Balance: {balance}");
+
     #[cfg(feature = "rpc")]
     {
         let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
-
-        let nonce = rpc.nonce_of_address(&address).await.unwrap();
-        println!("Nonce: {nonce}");
-
-        let balance = rpc.balance_of_address(&address).await.unwrap();
-        println!("Balance: {balance}");
 
         let blocks_count = rpc.block_count().await.unwrap();
         println!("BlocksCount: {blocks_count}");

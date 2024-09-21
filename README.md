@@ -72,7 +72,7 @@ let address = wallet.address();
 **Get wallet balance:**
 
 ```rust
-let balance = rpc.balance_of_address(&address).await.unwrap();
+let balance = wallet.get_balance().await;
 ```
 
 **Transfer PWR tokens:**

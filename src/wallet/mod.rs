@@ -9,7 +9,7 @@ use sha3::{Digest, Keccak256};
 
 use crate::wallet::types::{PublicKey, Wallet};
 use crate::transaction::NewTransactionData;
-use crate::rpc::{RPC};
+use crate::rpc::RPC;
 
 const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
 
@@ -66,10 +66,27 @@ impl Wallet {
         }
     }
 
+    pub fn private_key(&self) -> String {
+        let pk = self.private_key.to_bytes();
+        format!("0x{}", hex::encode(pk))
+    }
+
     pub fn address(&self) -> String {
         let public_key = self.public_key().verifying_key.to_encoded_point(false);
         let digest = Keccak256::new_with_prefix(&public_key.as_bytes()[1..]).finalize();
         format!("0x{}", hex::encode_upper(&digest[12..]))
+    }
+
+    pub async fn get_balance(&self) -> u64 {
+        let rpc = RPC::new(NODE_URL).await.unwrap();
+        let balance = rpc.balance_of_address(&self.address()).await.unwrap();
+        return balance;
+    }
+
+    pub async fn get_nonce(&self) -> u32 {
+        let rpc = RPC::new(NODE_URL).await.unwrap();
+        let nonce = rpc.nonce_of_address(&self.address()).await.unwrap();
+        return nonce;
     }
 
     pub async fn transfer_pwr(&self, amount: u64, recipient: String) -> String {
