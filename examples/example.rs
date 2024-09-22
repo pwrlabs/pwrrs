@@ -1,11 +1,10 @@
 use pwr_rs::{
-    Wallet, 
-    RPC, 
+    Wallet, RPC 
 };
 
 #[tokio::main]
 async fn main() {
-    let private_key = "0x9D4428C6E0638331B4866B70C831F8BA51C11B031F4B55EED4087BBB8EF0151F";
+    let private_key = "0x04828e90065864c111871769c601d7de2246570b39dd37c19ccac16c14b18f72";
     let wallet = Wallet::from_hex(&private_key).unwrap();
 
     let address = wallet.address();
@@ -53,7 +52,7 @@ async fn main() {
 
         let trx_hash = wallet.transfer_pwr(
             1000,
-            "61bd8fc1e30526aaf1c4706ada595d6d236d9883".into(),
+            "3B3B69093879E7B6F28366FA3C32762590FF547E".into(),
         ).await;
         println!("Transaction Hash: {trx_hash}");
 
@@ -62,6 +61,13 @@ async fn main() {
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
         let tx_hash = wallet.send_vm_data(1234, data_as_bytes).await;
+        println!("Transaction Hash: {tx_hash}");
+
+        let data = vec!["Hello World!"];
+        let data_as_bytes: Vec<u8> = data.into_iter()
+            .flat_map(|s| s.as_bytes().to_vec())
+            .collect();
+        let tx_hash = wallet.send_payable_vm_data(1234, data_as_bytes, 1000).await;
         println!("Transaction Hash: {tx_hash}");
     }
 }

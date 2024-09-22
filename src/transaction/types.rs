@@ -11,7 +11,7 @@ use crate::transaction::stream::{
     default_joining_fee,
     default_claiming_fee,
     default_fee_share,
-    default_proposal_status
+    // default_proposal_status
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -91,9 +91,6 @@ pub enum ConcreteTransaction {
         shares: u64,
     },
     Join {
-        #[serde(default = "default_hex", rename = "sender")]
-        validator: String,
-
         #[serde(default)]
         ip: String,
     },
@@ -102,11 +99,11 @@ pub enum ConcreteTransaction {
         vm_id: u64,
     },
     SetGuardian {
-        #[serde(default = "default_hex")]
-        guardian: String,
-
         #[serde(rename = "guardianExpiryDate", default)]
         guardian_expiry_date: u64,
+
+        #[serde(default = "default_hex")]
+        guardian: String,
     },
 
     #[serde(rename = "Payable VM Data")]
@@ -156,19 +153,19 @@ pub enum ConcreteTransaction {
         vm_id: u64,
 
         #[serde(default)]
-        conduits: Vec<String>,
+        conduits: Vec<u8>,
     },
 
     #[serde(rename = "Move Stake")]
     MoveStake {
+        #[serde(default, rename = "sharesAmount")]
+        shares_amount: u64,
+
         #[serde(default = "default_hex", rename = "fromValidator")]
         from_validator: String,
 
         #[serde(default = "default_hex", rename = "toValidator")]
         to_validator: String,
-
-        #[serde(default, rename = "sharesAmount")]
-        shares_amount: u64,
     },
 
     #[serde(rename = "Change Early Withdraw Penalty Proposal")]
@@ -314,11 +311,8 @@ pub enum ConcreteTransaction {
         #[serde(default = "default_hex", rename = "proposalHash")]
         proposal_hash: String,
 
-        #[serde(default = "default_proposal_status", rename = "proposalStatus")]
-        proposal_status: String,
-
         #[serde(default)]
-        vote: String,
+        vote: u32,
     },
 }
 
@@ -335,13 +329,19 @@ pub enum NewTransactionData {
         data: Vec<u8>,
     },
 
+    PayableVmData {
+        vm_id: u64,
+        data: Vec<u8>,
+        amount: u64,
+    },
+
     Delegate {
         amount: u64,
         /// 20 bytes address without `0x`
         validator: String,
     },
 
-    Whithdaw {
+    Withdraw {
         shares: u64,
         /// 20 bytes address without `0x`
         validator: String,
@@ -350,4 +350,112 @@ pub enum NewTransactionData {
     ClaimVmID {
         vm_id: u64,
     },
+
+    Join {
+        ip: String,
+    },
+
+    ClaimSpot {
+        /// 20 bytes address without `0x`
+        validator: String,
+    },
+
+    SetGuardian {
+        guardian_expiry_date: u64,
+        /// 20 bytes address without `0x`
+        guardian: String,
+    },
+
+    RemoveGuardian,
+
+    GuardianApproval {
+        transactions: Vec<Transaction>,
+    },
+
+    MoveStake {
+        shares_amount: u64,
+        from_validator: String,
+        to_validator: String,
+    },
+
+    SetConduits {
+        vm_id: u64,
+        conduits: Vec<String>,
+    },
+
+    AddConduits {
+        vm_id: u64,
+        conduits: Vec<String>,
+    },
+
+    // ChangeEarlyWithdrawPenaltyProposal {
+    //     title: String,
+    //     description: String,
+    //     withdraw_penalty: u64,
+    //     withdraw_penalty_time: u64,
+    // },
+
+    // ChangeFeePerByteProposal {
+    //     title: String,
+    //     description: String,
+    //     fee_per_byte: u64,
+    // },
+
+    // ChangeMaxBlockSizeProposal {
+    //     title: String,
+    //     description: String,
+    //     max_block_size: u32,
+    // },
+
+    // ChangeMaxTxnSizeProposal {
+    //     title: String,
+    //     description: String,
+    //     max_txn_size: u32,
+    // },
+
+    // ChangeOverallBurnPercentageProposal {
+    //     title: String,
+    //     description: String,
+    //     burn_percentage: u32,
+    // },
+
+    // ChangeRewardPerYearProposal {
+    //     title: String,
+    //     description: String,
+    //     reward_per_year: u64,
+    // },
+
+    // ChangeValidatorCountLimitProposal {
+    //     title: String,
+    //     description: String,
+    //     validator_count_limit: u32,
+    // },
+
+    // ChangeValidatorJoiningFeeProposal {
+    //     title: String,
+    //     description: String,
+    //     joining_fee: u64,
+    // },
+
+    // ChangeVmIdClaimingFeeProposal {
+    //     title: String,
+    //     description: String,
+    //     claiming_fee: u64,
+    // },
+
+    // ChangeVmOwnerTxnFeeShareProposal {
+    //     title: String,
+    //     description: String,
+    //     fee_share: u64,
+    // },
+
+    // OtherProposalTxn {
+    //     title: String,
+    //     description: String,
+    // },
+
+    // VoteOnProposalTxn {
+    //     proposal_hash: String,
+    //     vote: u32,
+    // },
 }
