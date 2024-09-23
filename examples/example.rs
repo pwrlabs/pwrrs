@@ -26,8 +26,8 @@ async fn main() {
         let latest_block_count = rpc.latest_block_count().await.unwrap();
         println!("LatestBlockCount: {latest_block_count}");
 
-        let fuck = rpc.guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
-        println!("Guardian: {fuck}");
+        let guardian = rpc.guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
+        println!("Guardian: {guardian}");
 
         let transactions = rpc.vm_data_transactions(836599, 836600, 69).await.unwrap();
         println!("Transactions: {:?}", transactions);
@@ -40,6 +40,9 @@ async fn main() {
 
         let active_voting_power = rpc.active_voting_power().await.unwrap();
         println!("ActiveVotingPower: {active_voting_power}");
+
+        let conduits_vm = rpc.conduits_of_vm(69).await.unwrap();
+        println!("ConduitsVM: {:?}", conduits_vm);
 
         let total_validators_count = rpc.total_validator_count().await.unwrap();
         println!("TotalValidatorsCount: {total_validators_count}");
