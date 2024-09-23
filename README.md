@@ -66,7 +66,7 @@ let wallet = Wallet::from_hex(&private_key).unwrap();
 **Get wallet address:**
 
 ```rust
-let address = wallet.address();
+let address = wallet.get_address();
 ```
 
 **Get wallet balance:**

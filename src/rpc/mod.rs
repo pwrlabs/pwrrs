@@ -10,7 +10,7 @@ use self::types::RpcError;
 
 use crate::{
     block::Block,
-    transaction::types::NewTransactionData,
+    transaction::types::{NewTransactionData, Transaction},
     delegator::Delegator,
     validator::Validator,
     wallet::types::Wallet
@@ -107,6 +107,457 @@ impl RPC {
             .await
             .map(|r: Response| r.blocks_count)
     }
+
+    pub async fn blockchain_version(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "blockchainVersion")]
+            blockchain_version: u64,
+        }
+
+        self.call_rpc_get("/blockchainVersion/")
+            .await
+            .map(|r: Response| r.blockchain_version)
+    }
+
+    pub async fn fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "blockchainVersion")]
+            blockchain_version: u64,
+        }
+
+        self.call_rpc_get("/blockchainVersion/")
+            .await
+            .map(|r: Response| r.blockchain_version)
+    }
+
+    pub async fn ecdsa_verification_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "ecdsaVerificationFee")]
+            ecdsa_verification_fee: u64,
+        }
+
+        self.call_rpc_get("/ecdsaVerificationFee/")
+            .await
+            .map(|r: Response| r.ecdsa_verification_fee)
+    }
+
+    pub async fn burn_percentage(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "burnPercentage")]
+            burn_percentage: u64,
+        }
+
+        self.call_rpc_get("/burnPercentage/")
+            .await
+            .map(|r: Response| r.burn_percentage)
+    }
+
+    pub async fn total_voting_power_res(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "totalVotingPower")]
+            total_voting_power: u64,
+        }
+
+        self.call_rpc_get("/totalVotingPower/")
+            .await
+            .map(|r: Response| r.total_voting_power)
+    }
+
+    pub async fn pwr_rewards_per_year(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "pwrRewardsPerYear")]
+            pwr_rewards_per_year: u64,
+        }
+
+        self.call_rpc_get("/pwrRewardsPerYear/")
+            .await
+            .map(|r: Response| r.pwr_rewards_per_year)
+    }
+
+    pub async fn withdrawal_lock_time(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "withdrawalLockTime")]
+            withdrawal_lock_time: u64,
+        }
+
+        self.call_rpc_get("/withdrawalLockTime/")
+            .await
+            .map(|r: Response| r.withdrawal_lock_time)
+    }
+
+    pub async fn all_early_withdraw_penalties(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "allEarlyWithdrawPenalties")]
+            all_early_withdraw_penalties: u64,
+        }
+
+        self.call_rpc_get("/allEarlyWithdrawPenalties/")
+            .await
+            .map(|r: Response| r.all_early_withdraw_penalties)
+    }
+
+    pub async fn max_block_size(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "maxBlockSize")]
+            max_block_size: u64,
+        }
+
+        self.call_rpc_get("/maxBlockSize/")
+            .await
+            .map(|r: Response| r.max_block_size)
+    }
+
+    pub async fn max_transaction_size(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "maxTransactionSize")]
+            max_transaction_size: u64,
+        }
+
+        self.call_rpc_get("/maxTransactionSize/")
+            .await
+            .map(|r: Response| r.max_transaction_size)
+    }
+
+    pub async fn block_number(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "blockNumber")]
+            block_number: u64,
+        }
+
+        self.call_rpc_get("/blockNumber/")
+            .await
+            .map(|r: Response| r.block_number)
+    }
+
+    pub async fn block_timestamp(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "blockTimestamp")]
+            block_timestamp: u64,
+        }
+
+        self.call_rpc_get("/blockTimestamp/")
+            .await
+            .map(|r: Response| r.block_timestamp)
+    }
+
+    pub async fn lates_block_number(&self) -> Result<u64, RpcError> {
+        self.block_number().await
+    }
+
+    pub async fn proposal_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "proposalFee")]
+            proposal_fee: u64,
+        }
+
+        self.call_rpc_get("/proposalFee/")
+            .await
+            .map(|r: Response| r.proposal_fee)
+    }
+
+    pub async fn proposal_validity_time(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "proposalValidityTime")]
+            proposal_validity_time: u64,
+        }
+
+        self.call_rpc_get("/proposalValidityTime/")
+            .await
+            .map(|r: Response| r.proposal_validity_time)
+    }
+
+    pub async fn validator_count_limit(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "validatorCountLimit")]
+            validator_count_limit: u64,
+        }
+
+        self.call_rpc_get("/validatorCountLimit/")
+            .await
+            .map(|r: Response| r.validator_count_limit)
+    }
+
+    pub async fn validator_slashing_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "validatorSlashingFee")]
+            validator_slashing_fee: u64,
+        }
+
+        self.call_rpc_get("/validatorSlashingFee/")
+            .await
+            .map(|r: Response| r.validator_slashing_fee)
+    }
+
+    pub async fn validator_operational_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "validatorOperationalFee")]
+            validator_operational_fee: u64,
+        }
+
+        self.call_rpc_get("/validatorOperationalFee/")
+            .await
+            .map(|r: Response| r.validator_operational_fee)
+    }
+
+    pub async fn validator_joining_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "validatorJoiningFee")]
+            validator_joining_fee: u64,
+        }
+
+        self.call_rpc_get("/validatorJoiningFee/")
+            .await
+            .map(|r: Response| r.validator_joining_fee)
+    }
+
+    pub async fn minimum_delegating_amount(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "minimumDelegatingAmount")]
+            minimum_delegating_amount: u64,
+        }
+
+        self.call_rpc_get("/minimumDelegatingAmount/")
+            .await
+            .map(|r: Response| r.minimum_delegating_amount)
+    }
+
+    pub async fn total_delegators_count(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "totalDelegatorsCount")]
+            total_delegators_count: u64,
+        }
+
+        self.call_rpc_get("/totalDelegatorsCount/")
+            .await
+            .map(|r: Response| r.total_delegators_count)
+    }
+
+    pub async fn validator(
+        &self,
+        validator_address: &str,
+    ) -> Result<Vec<Validator>, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            validators: Vec<Validator>,
+        }
+        self.call_rpc_get(&format!(
+            "/validator/?validatorAddress={}",
+            validator_address
+        ))
+        .await
+        .map(|r: Response| r.validators)
+    }
+
+    pub async fn delegators_of_pwr(
+        &self,
+        delegator_address: &str,
+        validator_address: &str,
+    ) -> Result<Vec<Delegator>, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            delegators: Vec<Delegator>,
+        }
+        self.call_rpc_get(&format!(
+            "/validator/delegator/delegatedPWROfAddress/?userAddress={}&validatorAddress={}",
+            delegator_address, validator_address
+        ))
+        .await
+        .map(|r: Response| r.delegators)
+    }
+
+    pub async fn shares_of_delegator(
+        &self,
+        delegator_address: &str,
+        validator_address: &str,
+    ) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "sharesOfAddress")]
+            shares_of_delegator: u64,
+        }
+        self.call_rpc_get(&format!(
+            "/validator/delegator/sharesOfAddress/?userAddress={}&validatorAddress={}",
+            delegator_address, validator_address
+        ))
+        .await
+        .map(|r: Response| r.shares_of_delegator)
+    }
+
+    pub async fn share_value(
+        &self,
+        validator_address: &str,
+    ) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "shareValue")]
+            share_value: u64,
+        }
+        self.call_rpc_get(&format!(
+            "/validator/shareValue/?validatorAddress={}",
+            validator_address
+        ))
+        .await
+        .map(|r: Response| r.share_value)
+    }
+
+    // 
+    pub async fn vm_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "vmOwnerTransactionFeeShare")]
+            vm_owner_transaction_fee_share: u64,
+        }
+
+        self.call_rpc_get("/vmOwnerTransactionFeeShare/")
+            .await
+            .map(|r: Response| r.vm_owner_transaction_fee_share)
+    }
+
+    pub async fn vm_id_claiming_fee(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "vmIdClaimingFee")]
+            vm_id_claiming_fee: u64,
+        }
+
+        self.call_rpc_get("/vmIdClaimingFee/")
+            .await
+            .map(|r: Response| r.vm_id_claiming_fee)
+    }
+
+    pub async fn vm_data_transactions(
+        &self,
+        starting_block: u64,
+        ending_block: u64,
+        vm_id: u64,
+    ) -> Result<Vec<Transaction>, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            transactions: Vec<Transaction>,
+        }
+        self.call_rpc_get(&format!(
+            "/getVmTransactions/?startingBlock={}&endingBlock={}&vmId={}",
+            starting_block, ending_block, vm_id
+        ))
+        .await
+        .map(|r: Response| r.transactions)
+    }
+
+    pub async fn vm_id_address(&self, vm_id: i64) -> String {
+        let mut hex_address = if vm_id >= 0 { String::from("1") } else { String::from("0") };
+    
+        let vm_id = if vm_id < 0 { -vm_id } else { vm_id };
+        let vm_id_string = vm_id.to_string();
+    
+        for _ in 0..(38 - vm_id_string.len()) { // Adjust padding to 38 since we already add '1' or '0'
+            hex_address.push('0');
+        }
+    
+        hex_address.push_str(&vm_id_string);
+    
+        format!("0x{}", hex_address)
+    }
+
+    pub async fn owner_of_vm_id(
+        &self,
+        vm_id: i64,
+    ) -> Result<String, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "owner")]
+            owner_of_vm_id: String,
+        }
+        self.call_rpc_get(&format!(
+            "/ownerOfVmId/?vmId={}",
+            vm_id
+        ))
+        .await
+        .map(|r: Response| r.owner_of_vm_id)
+    }
+
+    pub async fn conduits_of_vm(
+        &self,
+        vm_id: i64,
+    ) -> Result<Vec<Validator>, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            conduits: Vec<Validator>,
+        }
+        self.call_rpc_get(&format!(
+            "/conduitsOfVm/?vmId={}",
+            vm_id
+        ))
+        .await
+        .map(|r: Response| r.conduits)
+    }
+
+    pub async fn max_guardian_time(
+        &self,
+    ) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "maxGuardianTime")]
+            max_guardian_time: u64,
+        }
+        self.call_rpc_get(&format!(
+            "/maxGuardianTime/"
+        ))
+        .await
+        .map(|r: Response| r.max_guardian_time)
+    }
+    
+    pub async fn guardian_of_address(
+        &self,
+        address: &str,
+    ) -> Result<String, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            #[serde(rename = "isGuarded")]
+            is_guarded: bool,
+            guardian: Option<String>,
+        }
+
+        let res: Response = self.call_rpc_get(&format!(
+                "/guardianOf/?userAddress={}",
+                address
+            ))
+            .await?;
+            
+        if res.is_guarded {
+            if let Some(mut guardian) = res.guardian {
+                if !guardian.starts_with("0x") {
+                    guardian = format!("0x{}", guardian);
+                }
+                Ok(guardian)
+            } else {
+                Ok("None".to_string()) // or use some other default string
+            }
+        } else {
+            Ok("None".to_string())
+        }
+    }
+
+
 
     /// Retrieves the number of the latest block from the RPC node.
     ///
@@ -257,7 +708,7 @@ impl RPC {
             txn: String,
         }
 
-        let nonce = self.nonce_of_address(&wallet.address()).await?;
+        let nonce = self.nonce_of_address(&wallet.get_address()).await?;
 
         let mut hasher = Keccak256::new();
         let txn_bytes = transaction

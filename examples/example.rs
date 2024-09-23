@@ -7,7 +7,7 @@ async fn main() {
     let private_key = "0x04828e90065864c111871769c601d7de2246570b39dd37c19ccac16c14b18f72";
     let wallet = Wallet::from_hex(&private_key).unwrap();
 
-    let address = wallet.address();
+    let address = wallet.get_address();
     println!("Address: {address}");
 
     let nonce = wallet.get_nonce().await;
@@ -25,6 +25,15 @@ async fn main() {
 
         let latest_block_count = rpc.latest_block_count().await.unwrap();
         println!("LatestBlockCount: {latest_block_count}");
+
+        let fuck = rpc.guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
+        println!("Guardian: {fuck}");
+
+        let transactions = rpc.vm_data_transactions(836599, 836600, 69).await.unwrap();
+        println!("Transactions: {:?}", transactions);
+        
+        let block = rpc.block_by_number(836599).await.unwrap();
+        println!("{:?}", block);
 
         let block = rpc.block_by_number(1337).await.unwrap();
         println!("Block: {block:?}");

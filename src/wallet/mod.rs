@@ -61,32 +61,32 @@ impl Wallet {
             .verify_digest(digest, &sign)
     }
 
-    pub fn public_key(&self) -> PublicKey {
+    pub fn get_public_key(&self) -> PublicKey {
         PublicKey {
             verifying_key: *self.private_key.verifying_key(),
         }
     }
 
-    pub fn private_key(&self) -> String {
+    pub fn get_private_key(&self) -> String {
         let pk = self.private_key.to_bytes();
         format!("0x{}", hex::encode(pk))
     }
 
-    pub fn address(&self) -> String {
-        let public_key = self.public_key().verifying_key.to_encoded_point(false);
+    pub fn get_address(&self) -> String {
+        let public_key = self.get_public_key().verifying_key.to_encoded_point(false);
         let digest = Keccak256::new_with_prefix(&public_key.as_bytes()[1..]).finalize();
         format!("0x{}", hex::encode_upper(&digest[12..]))
     }
 
     pub async fn get_balance(&self) -> u64 {
         let rpc = RPC::new(NODE_URL).await.unwrap();
-        let balance = rpc.balance_of_address(&self.address()).await.unwrap();
+        let balance = rpc.balance_of_address(&self.get_address()).await.unwrap();
         return balance;
     }
 
     pub async fn get_nonce(&self) -> u32 {
         let rpc = RPC::new(NODE_URL).await.unwrap();
-        let nonce = rpc.nonce_of_address(&self.address()).await.unwrap();
+        let nonce = rpc.nonce_of_address(&self.get_address()).await.unwrap();
         return nonce;
     }
 
@@ -128,7 +128,7 @@ impl Wallet {
     }
 
     pub async fn claim_spot(&self) -> String {
-        let address = self.address().to_string().strip_prefix("0x").unwrap_or(&self.address()).to_string();
+        let address = self.get_address().to_string().strip_prefix("0x").unwrap_or(&self.get_address()).to_string();
         let new_tx = NewTransactionData::ClaimSpot { validator: address };
         let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
         return hash;
@@ -406,14 +406,14 @@ mod tests {
     #[test]
     fn can_get_public_key_from_wallet() {
         let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
-        let public_key = wallet.public_key();
+        let public_key = wallet.get_public_key();
         assert_eq!(public_key, PublicKey::from_hex("040cd999a20b0eba1cf86362c738929671902c9b337ab1370d2ba790be68b01227cab9fa9096b87651686bf898acf11857906907ba7fca4f5f5d9513bdd16e0a52").unwrap());
     }
 
     #[test]
     fn can_get_address_from_public_key() {
         let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
-        let address = wallet.address();
+        let address = wallet.get_address();
         assert_eq!(address, "0xA4710E3D79E1ED973AF58E0F269E9B21DD11BC64");
     }
 
