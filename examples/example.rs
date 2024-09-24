@@ -26,6 +26,12 @@ async fn main() {
         let latest_block_count = rpc.latest_block_count().await.unwrap();
         println!("LatestBlockCount: {latest_block_count}");
 
+        let start_block = 843500;
+        let end_block = 843750;
+        let vm_id = 123;
+        let transactions = rpc.vm_data_transactions(start_block, end_block, vm_id).await.unwrap();
+        println!("VMData: {:?}", transactions);
+
         let guardian = rpc.guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
         println!("Guardian: {guardian}");
 

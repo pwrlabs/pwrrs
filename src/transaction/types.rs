@@ -459,3 +459,57 @@ pub enum NewTransactionData {
     //     vote: u32,
     // },
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VMDataTransaction {
+    #[serde(default)]
+    pub size: u32,
+
+    pub position_in_the_block: u32,
+
+    #[serde(default)]
+    pub fee: u64,
+
+    #[serde(default)]
+    pub extrafee: u64,
+
+    #[serde(default = "default_hex")]
+    pub sender: String,
+
+    #[serde(default = "default_hex")]
+    pub receiver: String,
+
+    #[serde(default)]
+    pub nonce: u32,
+
+    #[serde(default = "default_hex")]
+    pub hash: String,
+
+    #[serde(default)]
+    pub block_number: u32,
+
+    #[serde(default)]
+    pub timestamp: u64,
+
+    #[serde(default)]
+    pub value: u64,
+
+    #[serde(default, with = "hex_serde")]
+    pub raw_transaction: Vec<u8>,
+
+    #[serde(default)]
+    pub chain_id: u8,
+
+    #[serde(default)]
+    pub success: bool,
+
+    #[serde(default)]
+    pub error_message: String,
+
+    #[serde(default)]
+    pub vm_id: u64,
+
+    #[serde(default, with = "hex_serde")]
+    pub data: Vec<u8>,
+}

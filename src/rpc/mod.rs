@@ -10,7 +10,7 @@ use self::types::RpcError;
 
 use crate::{
     block::Block,
-    transaction::types::{NewTransactionData, Transaction},
+    transaction::types::{NewTransactionData, VMDataTransaction},
     delegator::Delegator,
     validator::Validator,
     wallet::types::Wallet
@@ -450,10 +450,10 @@ impl RPC {
         starting_block: u64,
         ending_block: u64,
         vm_id: u64,
-    ) -> Result<Vec<Transaction>, RpcError> {
+    ) -> Result<Vec<VMDataTransaction>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            transactions: Vec<Transaction>,
+            transactions: Vec<VMDataTransaction>,
         }
         self.call_rpc_get(&format!(
             "/getVmTransactions/?startingBlock={}&endingBlock={}&vmId={}",
