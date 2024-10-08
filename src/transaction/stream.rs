@@ -34,8 +34,12 @@ pub fn default_claiming_fee() -> u64 {
     8
 }
 
-pub fn default_fee_share() -> u64 {
-    8
+pub fn default_fee_share() -> u32 {
+    4
+}
+
+pub fn default_vote() -> u8 {
+    1
 }
 
 pub fn default_proposal_status() -> String {

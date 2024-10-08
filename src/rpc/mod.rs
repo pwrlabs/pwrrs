@@ -60,19 +60,19 @@ impl RPC {
     }
 
     /// Retrieves the current RPC node URL being used.
-    pub fn node_url(&self) -> &Url {
+    pub fn get_node_url(&self) -> &Url {
         &self.node_url
     }
 
     /// Fetches the current fee-per-byte rate that's been set locally.
-    pub fn fee_per_byte(&self) -> u64 {
+    pub fn get_fee_per_byte(&self) -> u64 {
         self.fee_per_byte
     }
 
     /// Queries the RPC node to get the nonce of a specific address.
     ///
     /// The nonce is a count of the number of transactions sent from the sender's address.
-    pub async fn nonce_of_address(&self, address: &str) -> Result<u32, RpcError> {
+    pub async fn get_nonce_of_address(&self, address: &str) -> Result<u32, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             nonce: u32,
@@ -84,7 +84,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to obtain the balance of a specific address.
-    pub async fn balance_of_address(&self, address: &str) -> Result<u64, RpcError> {
+    pub async fn get_balance_of_address(&self, address: &str) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             balance: u64,
@@ -96,7 +96,7 @@ impl RPC {
     }
 
     /// Retrieves the total count of blocks from the RPC node.
-    pub async fn block_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_block_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "blocksCount")]
@@ -108,7 +108,7 @@ impl RPC {
             .map(|r: Response| r.blocks_count)
     }
 
-    pub async fn blockchain_version(&self) -> Result<u64, RpcError> {
+    pub async fn get_blockchain_version(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "blockchainVersion")]
@@ -120,7 +120,7 @@ impl RPC {
             .map(|r: Response| r.blockchain_version)
     }
 
-    pub async fn fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "blockchainVersion")]
@@ -132,7 +132,7 @@ impl RPC {
             .map(|r: Response| r.blockchain_version)
     }
 
-    pub async fn ecdsa_verification_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_ecdsa_verification_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "ecdsaVerificationFee")]
@@ -144,7 +144,7 @@ impl RPC {
             .map(|r: Response| r.ecdsa_verification_fee)
     }
 
-    pub async fn burn_percentage(&self) -> Result<u64, RpcError> {
+    pub async fn get_burn_percentage(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "burnPercentage")]
@@ -156,7 +156,7 @@ impl RPC {
             .map(|r: Response| r.burn_percentage)
     }
 
-    pub async fn total_voting_power_res(&self) -> Result<u64, RpcError> {
+    pub async fn get_total_voting_power_res(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "totalVotingPower")]
@@ -168,7 +168,7 @@ impl RPC {
             .map(|r: Response| r.total_voting_power)
     }
 
-    pub async fn pwr_rewards_per_year(&self) -> Result<u64, RpcError> {
+    pub async fn get_pwr_rewards_per_year(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "pwrRewardsPerYear")]
@@ -180,7 +180,7 @@ impl RPC {
             .map(|r: Response| r.pwr_rewards_per_year)
     }
 
-    pub async fn withdrawal_lock_time(&self) -> Result<u64, RpcError> {
+    pub async fn get_withdrawal_lock_time(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "withdrawalLockTime")]
@@ -192,7 +192,7 @@ impl RPC {
             .map(|r: Response| r.withdrawal_lock_time)
     }
 
-    pub async fn all_early_withdraw_penalties(&self) -> Result<u64, RpcError> {
+    pub async fn get_all_early_withdraw_penalties(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "allEarlyWithdrawPenalties")]
@@ -204,7 +204,7 @@ impl RPC {
             .map(|r: Response| r.all_early_withdraw_penalties)
     }
 
-    pub async fn max_block_size(&self) -> Result<u64, RpcError> {
+    pub async fn get_max_block_size(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "maxBlockSize")]
@@ -216,7 +216,7 @@ impl RPC {
             .map(|r: Response| r.max_block_size)
     }
 
-    pub async fn max_transaction_size(&self) -> Result<u64, RpcError> {
+    pub async fn get_max_transaction_size(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "maxTransactionSize")]
@@ -228,7 +228,7 @@ impl RPC {
             .map(|r: Response| r.max_transaction_size)
     }
 
-    pub async fn block_number(&self) -> Result<u64, RpcError> {
+    pub async fn get_block_number(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "blockNumber")]
@@ -240,7 +240,7 @@ impl RPC {
             .map(|r: Response| r.block_number)
     }
 
-    pub async fn block_timestamp(&self) -> Result<u64, RpcError> {
+    pub async fn get_block_timestamp(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "blockTimestamp")]
@@ -252,11 +252,11 @@ impl RPC {
             .map(|r: Response| r.block_timestamp)
     }
 
-    pub async fn lates_block_number(&self) -> Result<u64, RpcError> {
-        self.block_number().await
+    pub async fn get_latest_block_number(&self) -> Result<u64, RpcError> {
+        self.get_block_number().await
     }
 
-    pub async fn proposal_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_proposal_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "proposalFee")]
@@ -268,7 +268,7 @@ impl RPC {
             .map(|r: Response| r.proposal_fee)
     }
 
-    pub async fn proposal_validity_time(&self) -> Result<u64, RpcError> {
+    pub async fn get_proposal_validity_time(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "proposalValidityTime")]
@@ -280,7 +280,7 @@ impl RPC {
             .map(|r: Response| r.proposal_validity_time)
     }
 
-    pub async fn validator_count_limit(&self) -> Result<u64, RpcError> {
+    pub async fn get_validator_count_limit(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "validatorCountLimit")]
@@ -292,7 +292,7 @@ impl RPC {
             .map(|r: Response| r.validator_count_limit)
     }
 
-    pub async fn validator_slashing_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_validator_slashing_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "validatorSlashingFee")]
@@ -304,7 +304,7 @@ impl RPC {
             .map(|r: Response| r.validator_slashing_fee)
     }
 
-    pub async fn validator_operational_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_validator_operational_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "validatorOperationalFee")]
@@ -316,7 +316,7 @@ impl RPC {
             .map(|r: Response| r.validator_operational_fee)
     }
 
-    pub async fn validator_joining_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_validator_joining_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "validatorJoiningFee")]
@@ -328,7 +328,7 @@ impl RPC {
             .map(|r: Response| r.validator_joining_fee)
     }
 
-    pub async fn minimum_delegating_amount(&self) -> Result<u64, RpcError> {
+    pub async fn get_minimum_delegating_amount(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "minimumDelegatingAmount")]
@@ -340,7 +340,7 @@ impl RPC {
             .map(|r: Response| r.minimum_delegating_amount)
     }
 
-    pub async fn total_delegators_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_total_delegators_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "totalDelegatorsCount")]
@@ -352,7 +352,7 @@ impl RPC {
             .map(|r: Response| r.total_delegators_count)
     }
 
-    pub async fn validator(
+    pub async fn get_validator(
         &self,
         validator_address: &str,
     ) -> Result<Vec<Validator>, RpcError> {
@@ -368,7 +368,7 @@ impl RPC {
         .map(|r: Response| r.validators)
     }
 
-    pub async fn delegators_of_pwr(
+    pub async fn get_delegators_of_pwr(
         &self,
         delegator_address: &str,
         validator_address: &str,
@@ -385,7 +385,7 @@ impl RPC {
         .map(|r: Response| r.delegators)
     }
 
-    pub async fn shares_of_delegator(
+    pub async fn get_shares_of_delegator(
         &self,
         delegator_address: &str,
         validator_address: &str,
@@ -403,7 +403,7 @@ impl RPC {
         .map(|r: Response| r.shares_of_delegator)
     }
 
-    pub async fn share_value(
+    pub async fn get_share_value(
         &self,
         validator_address: &str,
     ) -> Result<u64, RpcError> {
@@ -421,7 +421,7 @@ impl RPC {
     }
 
     // 
-    pub async fn vm_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
+    pub async fn get_vm_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "vmOwnerTransactionFeeShare")]
@@ -433,7 +433,7 @@ impl RPC {
             .map(|r: Response| r.vm_owner_transaction_fee_share)
     }
 
-    pub async fn vm_id_claiming_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_vm_id_claiming_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "vmIdClaimingFee")]
@@ -445,7 +445,7 @@ impl RPC {
             .map(|r: Response| r.vm_id_claiming_fee)
     }
 
-    pub async fn vm_data_transactions(
+    pub async fn get_vm_data_transactions(
         &self,
         starting_block: u64,
         ending_block: u64,
@@ -463,7 +463,7 @@ impl RPC {
         .map(|r: Response| r.transactions)
     }
 
-    pub async fn vm_id_address(&self, vm_id: i64) -> String {
+    pub async fn get_vm_id_address(&self, vm_id: i64) -> String {
         let mut hex_address = if vm_id >= 0 { String::from("1") } else { String::from("0") };
     
         let vm_id = if vm_id < 0 { -vm_id } else { vm_id };
@@ -478,7 +478,7 @@ impl RPC {
         format!("0x{}", hex_address)
     }
 
-    pub async fn owner_of_vm_id(
+    pub async fn get_owner_of_vm_id(
         &self,
         vm_id: i64,
     ) -> Result<String, RpcError> {
@@ -495,7 +495,7 @@ impl RPC {
         .map(|r: Response| r.owner_of_vm_id)
     }
 
-    pub async fn conduits_of_vm(
+    pub async fn get_conduits_of_vm(
         &self,
         vm_id: i64,
     ) -> Result<Vec<Validator>, RpcError> {
@@ -511,7 +511,7 @@ impl RPC {
         .map(|r: Response| r.conduits)
     }
 
-    pub async fn max_guardian_time(
+    pub async fn get_max_guardian_time(
         &self,
     ) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
@@ -526,7 +526,7 @@ impl RPC {
         .map(|r: Response| r.max_guardian_time)
     }
     
-    pub async fn guardian_of_address(
+    pub async fn get_guardian_of_address(
         &self,
         address: &str,
     ) -> Result<String, RpcError> {
@@ -557,18 +557,16 @@ impl RPC {
         }
     }
 
-
-
     /// Retrieves the number of the latest block from the RPC node.
     ///
     /// This method utilizes the `block_count` method to get the total count of blocks
     /// and then subtracts one to get the latest block number
-    pub async fn latest_block_count(&self) -> Result<u64, RpcError> {
-        self.block_count().await.map(|v| v - 1)
+    pub async fn get_latest_block_count(&self) -> Result<u64, RpcError> {
+        self.get_block_count().await.map(|v| v - 1)
     }
 
     /// Queries the RPC node to retrieve block details for a specific block number.
-    pub async fn block_by_number(&self, block_number: u64) -> Result<Block, RpcError> {
+    pub async fn get_block_by_number(&self, block_number: u64) -> Result<Block, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             block: Block,
@@ -578,7 +576,7 @@ impl RPC {
             .map(|r: Response| r.block)
     }
 
-    pub async fn active_voting_power(&self) -> Result<u64, RpcError> {
+    pub async fn get_active_voting_power(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct Response {
@@ -590,7 +588,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the total number of validators (standby & active).
-    pub async fn total_validator_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_total_validator_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct Response {
@@ -602,7 +600,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the total number of standby validators.
-    pub async fn standby_validator_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_standby_validator_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct Response {
@@ -614,7 +612,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the total number of active validators.
-    pub async fn active_validator_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_active_validator_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct Response {
@@ -626,7 +624,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the list of all validators (standby & active).
-    pub async fn all_validators(&self) -> Result<Vec<Validator>, RpcError> {
+    pub async fn get_all_validators(&self) -> Result<Vec<Validator>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             validators: Vec<Validator>,
@@ -637,7 +635,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the list of all standby validators.
-    pub async fn standby_validators(&self) -> Result<Vec<Validator>, RpcError> {
+    pub async fn get_standby_validators(&self) -> Result<Vec<Validator>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             validators: Vec<Validator>,
@@ -648,7 +646,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the list of all active validators.
-    pub async fn active_validators(&self) -> Result<Vec<Validator>, RpcError> {
+    pub async fn get_active_validators(&self) -> Result<Vec<Validator>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             validators: Vec<Validator>,
@@ -659,7 +657,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the list of delegators of a validator.
-    pub async fn delegators_of_validator(
+    pub async fn get_delegators_of_validator(
         &self,
         validator_address: &str,
     ) -> Result<Vec<Delegator>, RpcError> {
@@ -708,7 +706,7 @@ impl RPC {
             txn: String,
         }
 
-        let nonce = self.nonce_of_address(&wallet.get_address()).await?;
+        let nonce = self.get_nonce_of_address(&wallet.get_address()).await?;
 
         let mut hasher = Keccak256::new();
         let txn_bytes = transaction
