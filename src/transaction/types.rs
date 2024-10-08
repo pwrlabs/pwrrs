@@ -11,6 +11,7 @@ use crate::transaction::stream::{
     default_joining_fee,
     default_claiming_fee,
     default_fee_share,
+    default_vote,
     // default_proposal_status
 };
 
@@ -177,7 +178,7 @@ pub enum ConcreteTransaction {
         description: String,
 
         #[serde(default, rename = "earlyWithdrawPenalty")]
-        withdraw_penalty: u64,
+        withdraw_penalty: u32,
 
         #[serde(default, rename = "earlyWithdrawTime")]
         withdraw_penalty_time: u64,
@@ -294,7 +295,7 @@ pub enum ConcreteTransaction {
         description: String,
 
         #[serde(default = "default_fee_share", rename = "vmOwnerTxnFeeShare")]
-        fee_share: u64,
+        fee_share: u32,
     },
 
     #[serde(rename = "Other Proposal")]
@@ -311,15 +312,14 @@ pub enum ConcreteTransaction {
         #[serde(default = "default_hex", rename = "proposalHash")]
         proposal_hash: String,
 
-        #[serde(default)]
-        vote: u32,
+        #[serde(default = "default_vote")]
+        vote: u8,
     },
 }
 
 pub enum NewTransactionData {
     Transfer {
         amount: u64,
-        /// 20 bytes address without `0x`
         recipient: String,
     },
 
@@ -337,13 +337,11 @@ pub enum NewTransactionData {
 
     Delegate {
         amount: u64,
-        /// 20 bytes address without `0x`
         validator: String,
     },
 
     Withdraw {
         shares: u64,
-        /// 20 bytes address without `0x`
         validator: String,
     },
 
@@ -356,13 +354,11 @@ pub enum NewTransactionData {
     },
 
     ClaimSpot {
-        /// 20 bytes address without `0x`
         validator: String,
     },
 
     SetGuardian {
         guardian_expiry_date: u64,
-        /// 20 bytes address without `0x`
         guardian: String,
     },
 
@@ -385,77 +381,131 @@ pub enum NewTransactionData {
 
     AddConduits {
         vm_id: u64,
-        conduits: Vec<String>,
+        conduits: Vec<u8>,
     },
 
-    // ChangeEarlyWithdrawPenaltyProposal {
-    //     title: String,
-    //     description: String,
-    //     withdraw_penalty: u64,
-    //     withdraw_penalty_time: u64,
-    // },
+    ChangeEarlyWithdrawPenaltyProposal {
+        title: String,
+        description: String,
+        withdraw_penalty: u32,
+        withdraw_penalty_time: u64,
+    },
 
-    // ChangeFeePerByteProposal {
-    //     title: String,
-    //     description: String,
-    //     fee_per_byte: u64,
-    // },
+    ChangeFeePerByteProposal {
+        title: String,
+        description: String,
+        fee_per_byte: u64,
+    },
 
-    // ChangeMaxBlockSizeProposal {
-    //     title: String,
-    //     description: String,
-    //     max_block_size: u32,
-    // },
+    ChangeMaxBlockSizeProposal {
+        title: String,
+        description: String,
+        max_block_size: u32,
+    },
 
-    // ChangeMaxTxnSizeProposal {
-    //     title: String,
-    //     description: String,
-    //     max_txn_size: u32,
-    // },
+    ChangeMaxTxnSizeProposal {
+        title: String,
+        description: String,
+        max_txn_size: u32,
+    },
 
-    // ChangeOverallBurnPercentageProposal {
-    //     title: String,
-    //     description: String,
-    //     burn_percentage: u32,
-    // },
+    ChangeOverallBurnPercentageProposal {
+        title: String,
+        description: String,
+        burn_percentage: u32,
+    },
 
-    // ChangeRewardPerYearProposal {
-    //     title: String,
-    //     description: String,
-    //     reward_per_year: u64,
-    // },
+    ChangeRewardPerYearProposal {
+        title: String,
+        description: String,
+        reward_per_year: u64,
+    },
 
-    // ChangeValidatorCountLimitProposal {
-    //     title: String,
-    //     description: String,
-    //     validator_count_limit: u32,
-    // },
+    ChangeValidatorCountLimitProposal {
+        title: String,
+        description: String,
+        validator_count_limit: u32,
+    },
 
-    // ChangeValidatorJoiningFeeProposal {
-    //     title: String,
-    //     description: String,
-    //     joining_fee: u64,
-    // },
+    ChangeValidatorJoiningFeeProposal {
+        title: String,
+        description: String,
+        joining_fee: u64,
+    },
 
-    // ChangeVmIdClaimingFeeProposal {
-    //     title: String,
-    //     description: String,
-    //     claiming_fee: u64,
-    // },
+    ChangeVmIdClaimingFeeProposal {
+        title: String,
+        description: String,
+        claiming_fee: u64,
+    },
 
-    // ChangeVmOwnerTxnFeeShareProposal {
-    //     title: String,
-    //     description: String,
-    //     fee_share: u64,
-    // },
+    ChangeVmOwnerTxnFeeShareProposal {
+        title: String,
+        description: String,
+        fee_share: u32,
+    },
 
-    // OtherProposalTxn {
-    //     title: String,
-    //     description: String,
-    // },
+    OtherProposalTxn {
+        title: String,
+        description: String,
+    },
 
-    // VoteOnProposalTxn {
-    //     proposal_hash: String,
-    //     vote: u32,
-    // },
+    VoteOnProposalTxn {
+        proposal_hash: String,
+        vote: u8,
+    },
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VMDataTransaction {
+    #[serde(default)]
+    pub size: u32,
+
+    pub position_in_the_block: u32,
+
+    #[serde(default)]
+    pub fee: u64,
+
+    #[serde(default)]
+    pub extrafee: u64,
+
+    #[serde(default = "default_hex")]
+    pub sender: String,
+
+    #[serde(default = "default_hex")]
+    pub receiver: String,
+
+    #[serde(default)]
+    pub nonce: u32,
+
+    #[serde(default = "default_hex")]
+    pub hash: String,
+
+    #[serde(default)]
+    pub block_number: u32,
+
+    #[serde(default)]
+    pub timestamp: u64,
+
+    #[serde(default)]
+    pub value: u64,
+
+    #[serde(default, with = "hex_serde")]
+    pub raw_transaction: Vec<u8>,
+
+    #[serde(default)]
+    pub chain_id: u8,
+
+    #[serde(default)]
+    pub success: bool,
+
+    #[serde(default)]
+    pub error_message: String,
+
+    #[serde(default)]
+    pub vm_id: u64,
+
+    #[serde(default, with = "hex_serde")]
+    pub data: Vec<u8>,
 }

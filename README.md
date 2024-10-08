@@ -78,8 +78,7 @@ let balance = wallet.get_balance().await;
 **Transfer PWR tokens:**
 
 ```rust
-/// recipientAddress: 20 bytes address without `0x`
-wallet.transfer_pwr(1000, "recipientAddress".into()).await;
+wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
 ```
 
 Sending a transcation to the PWR Chain returns a Response object, which specified if the transaction was a success, and returns relevant data.
@@ -91,8 +90,7 @@ async fn main() {
     let private_key = "0xac0974bec...f80";
     let wallet = Wallet::from_hex(&private_key).unwrap();
 
-    /// recipientAddress: 20 bytes address without `0x`
-    let trx_hash = wallet.transfer_pwr(1000, "recipientAddress".into()).await;
+    let trx_hash = wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
     println!("Transaction Hash: {trx_hash}");
 }
 ```
@@ -120,7 +118,7 @@ async fn main() {
 Returns currently set RPC node URL.
 
 ```rust
-let url = rpc.node_url();
+let url = rpc.get_node_url();
 ```
 
 **Get Fee Per Byte: **
@@ -128,7 +126,7 @@ let url = rpc.node_url();
 Gets the latest fee-per-byte rate.
 
 ```rust
-let fee = rpc.fee_per_byte();
+let fee = rpc.get_fee_per_byte();
 ```
 
 **Get Balance Of Address:**
@@ -136,7 +134,7 @@ let fee = rpc.fee_per_byte();
 Gets the balance of a specific address.
 
 ```rust
-let balance = rpc.balance_of_address("0x...").await.unwrap();
+let balance = rpc.get_balance_of_address("0x...").await.unwrap();
 ```
 
 **Get Nonce Of Address:**
@@ -144,7 +142,7 @@ let balance = rpc.balance_of_address("0x...").await.unwrap();
 Gets the nonce/transaction count of a specific address.
 
 ```rust
-let nonce = rpc.nonce_of_address("0x...").await.unwrap();
+let nonce = rpc.get_nonce_of_address("0x...").await.unwrap();
 ```
 
 ## ✏️ Contributing
