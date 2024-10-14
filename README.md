@@ -37,7 +37,7 @@ cargo add pwr-rs
 
 How to [Guides](https://pwrlabs.io) 🔜 & [API](https://pwrlabs.io) 💻
 
-Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-components/) 🎮
+Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-examples/) 🎮
 
 ## 💫 Getting Started
 
