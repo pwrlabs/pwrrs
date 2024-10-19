@@ -11,6 +11,5 @@ pub struct Validator {
     pub voting_power: u64,
     pub total_shares: u64,
     pub delegators_count: u32,
-    #[serde(default)]
-    pub is_active: bool,
+    pub status: String,
 }

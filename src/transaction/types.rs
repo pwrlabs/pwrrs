@@ -509,3 +509,10 @@ pub struct VMDataTransaction {
     #[serde(default, with = "hex_serde")]
     pub data: Vec<u8>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Penalty {
+    pub withdraw_time: u64,
+    pub penalty: String
+}

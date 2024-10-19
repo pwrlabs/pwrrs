@@ -34,15 +34,9 @@ async fn main() {
 
         let guardian = rpc.get_guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
         println!("Guardian: {guardian}");
-
-        let transactions = rpc.get_vm_data_transactions(836599, 836600, 69).await.unwrap();
-        println!("Transactions: {:?}", transactions);
         
         let block = rpc.get_block_by_number(836599).await.unwrap();
         println!("{:?}", block);
-
-        let block = rpc.get_block_by_number(1337).await.unwrap();
-        println!("Block: {block:?}");
 
         let active_voting_power = rpc.get_active_voting_power().await.unwrap();
         println!("ActiveVotingPower: {active_voting_power}");
@@ -50,7 +44,7 @@ async fn main() {
         let conduits_vm = rpc.get_conduits_of_vm(69).await.unwrap();
         println!("ConduitsVM: {:?}", conduits_vm);
 
-        let total_validators_count = rpc.get_total_validator_count().await.unwrap();
+        let total_validators_count = rpc.get_validators_count().await.unwrap();
         println!("TotalValidatorsCount: {total_validators_count}");
 
         let standby_validators_count = rpc.get_standby_validator_count().await.unwrap();
