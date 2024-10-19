@@ -1,6 +1,6 @@
 [package]
 name = "pwr-rs"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 authors = ["Hamid R. K. Pishghadam <kaveh@riseup.net>"]
 license = "MIT OR Apache-2.0"

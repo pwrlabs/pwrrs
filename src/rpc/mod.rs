@@ -3,6 +3,7 @@ pub mod types;
 use reqwest::{Client, StatusCode};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
+use std::collections::HashMap;
 use url::Url;
 
 pub use self::types::RPC;
@@ -10,8 +11,7 @@ use self::types::RpcError;
 
 use crate::{
     block::Block,
-    transaction::types::{NewTransactionData, VMDataTransaction},
-    delegator::Delegator,
+    transaction::types::{NewTransactionData, VMDataTransaction, Penalty},
     validator::Validator,
     wallet::types::Wallet
 };
@@ -120,17 +120,9 @@ impl RPC {
             .map(|r: Response| r.blockchain_version)
     }
 
-    pub async fn get_fee(&self) -> Result<u64, RpcError> {
-        #[derive(Deserialize)]
-        struct Response {
-            #[serde(rename = "blockchainVersion")]
-            blockchain_version: u64,
-        }
-
-        self.call_rpc_get("/blockchainVersion/")
-            .await
-            .map(|r: Response| r.blockchain_version)
-    }
+    // pub async fn get_fee(&self) -> u64 {
+        
+    // }
 
     pub async fn get_ecdsa_verification_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
@@ -192,11 +184,11 @@ impl RPC {
             .map(|r: Response| r.withdrawal_lock_time)
     }
 
-    pub async fn get_all_early_withdraw_penalties(&self) -> Result<u64, RpcError> {
+    pub async fn get_all_early_withdraw_penalties(&self) -> Result<HashMap<String, Penalty>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            #[serde(rename = "allEarlyWithdrawPenalties")]
-            all_early_withdraw_penalties: u64,
+            #[serde(rename = "earlyWithdrawPenalties")]
+            all_early_withdraw_penalties: HashMap<String, Penalty>,
         }
 
         self.call_rpc_get("/allEarlyWithdrawPenalties/")
@@ -343,7 +335,7 @@ impl RPC {
     pub async fn get_total_delegators_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            #[serde(rename = "totalDelegatorsCount")]
+            #[serde(rename = "delegatorsCount")]
             total_delegators_count: u64,
         }
 
@@ -355,27 +347,28 @@ impl RPC {
     pub async fn get_validator(
         &self,
         validator_address: &str,
-    ) -> Result<Vec<Validator>, RpcError> {
+    ) -> Result<Validator, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            validators: Vec<Validator>,
+            validator: Validator,
         }
         self.call_rpc_get(&format!(
             "/validator/?validatorAddress={}",
             validator_address
         ))
         .await
-        .map(|r: Response| r.validators)
+        .map(|r: Response| r.validator)
     }
 
     pub async fn get_delegators_of_pwr(
         &self,
         delegator_address: &str,
         validator_address: &str,
-    ) -> Result<Vec<Delegator>, RpcError> {
+    ) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            delegators: Vec<Delegator>,
+            #[serde(rename = "delegatedPWR")]
+            delegators: u64,
         }
         self.call_rpc_get(&format!(
             "/validator/delegator/delegatedPWROfAddress/?userAddress={}&validatorAddress={}",
@@ -392,7 +385,7 @@ impl RPC {
     ) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            #[serde(rename = "sharesOfAddress")]
+            #[serde(rename = "shares")]
             shares_of_delegator: u64,
         }
         self.call_rpc_get(&format!(
@@ -406,11 +399,11 @@ impl RPC {
     pub async fn get_share_value(
         &self,
         validator_address: &str,
-    ) -> Result<u64, RpcError> {
+    ) -> Result<f64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "shareValue")]
-            share_value: u64,
+            share_value: f64,
         }
         self.call_rpc_get(&format!(
             "/validator/shareValue/?validatorAddress={}",
@@ -420,7 +413,6 @@ impl RPC {
         .map(|r: Response| r.share_value)
     }
 
-    // 
     pub async fn get_vm_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
@@ -463,13 +455,13 @@ impl RPC {
         .map(|r: Response| r.transactions)
     }
 
-    pub async fn get_vm_id_address(&self, vm_id: i64) -> String {
+    pub fn get_vm_id_address(&self, vm_id: i64) -> String {
         let mut hex_address = if vm_id >= 0 { String::from("1") } else { String::from("0") };
     
         let vm_id = if vm_id < 0 { -vm_id } else { vm_id };
         let vm_id_string = vm_id.to_string();
     
-        for _ in 0..(38 - vm_id_string.len()) { // Adjust padding to 38 since we already add '1' or '0'
+        for _ in 0..(39 - vm_id_string.len()) {
             hex_address.push('0');
         }
     
@@ -588,7 +580,7 @@ impl RPC {
     }
 
     /// Queries the RPC node to get the total number of validators (standby & active).
-    pub async fn get_total_validator_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_validators_count(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct Response {
@@ -660,10 +652,10 @@ impl RPC {
     pub async fn get_delegators_of_validator(
         &self,
         validator_address: &str,
-    ) -> Result<Vec<Delegator>, RpcError> {
+    ) -> Result<HashMap<String, u64>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            delegators: Vec<Delegator>,
+            delegators: HashMap<String, u64>,
         }
         self.call_rpc_get(&format!(
             "/validator/delegatorsOfValidator/?validatorAddress={}",
