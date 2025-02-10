@@ -26,16 +26,16 @@ async fn main() {
         let latest_block_count = rpc.get_latest_block_count().await.unwrap();
         println!("LatestBlockCount: {latest_block_count}");
 
-        let start_block = 843500;
-        let end_block = 843750;
-        let vm_id = 123;
+        let start_block = 65208;
+        let end_block = 65210;
+        let vm_id = 1234;
         let transactions = rpc.get_vm_data_transactions(start_block, end_block, vm_id).await.unwrap();
         println!("VMData: {:?}", transactions);
 
         let guardian = rpc.get_guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
         println!("Guardian: {guardian}");
         
-        let block = rpc.get_block_by_number(836599).await.unwrap();
+        let block = rpc.get_block_by_number(65220).await.unwrap();
         println!("{:?}", block);
 
         let active_voting_power = rpc.get_active_voting_power().await.unwrap();
@@ -66,20 +66,20 @@ async fn main() {
             "0x3B3B69093879E7B6F28366FA3C32762590FF547E".into(),
             1000,
         ).await;
-        println!("Transaction Hash: {trx_hash}");
+        println!("Transfer tx hash: {trx_hash}");
 
         let data = vec!["Hello World!"];
         let data_as_bytes: Vec<u8> = data.into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
         let tx_hash = wallet.send_vm_data(1234, data_as_bytes).await;
-        println!("Transaction Hash: {tx_hash}");
+        println!("Send VM Data tx hash: {tx_hash}");
 
         let data = vec!["Hello World!"];
         let data_as_bytes: Vec<u8> = data.into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
         let tx_hash = wallet.send_payable_vm_data(1234, 1000, data_as_bytes).await;
-        println!("Transaction Hash: {tx_hash}");
+        println!("Send Payable VM Data tx hash: {tx_hash}");
     }
 }

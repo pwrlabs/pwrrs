@@ -14,7 +14,7 @@ impl NewTransactionData {
         wallet: &Wallet,
     ) -> Result<Vec<u8>, &'static str> {
         let mut bytes = Vec::new();
-        bytes.push(self.identifier());
+        bytes.extend(self.identifier().to_be_bytes());
         bytes.extend(chain_id.to_be_bytes());
         bytes.extend(nonce.to_be_bytes());
         bytes.extend(self.transaction_bytes()?);
@@ -48,6 +48,7 @@ impl NewTransactionData {
             }
             NewTransactionData::VmData { vm_id, data } => {
                 bytes.extend(vm_id.to_be_bytes());
+                bytes.extend((data.len() as u32).to_be_bytes());
                 bytes.extend(data);
             }
             NewTransactionData::ClaimVmID { vm_id } => bytes.extend(vm_id.to_be_bytes()),
@@ -71,6 +72,7 @@ impl NewTransactionData {
             }
             NewTransactionData::PayableVmData { vm_id, data, amount } => {
                 bytes.extend(vm_id.to_be_bytes());
+                bytes.extend((data.len() as u32).to_be_bytes());
                 bytes.extend(data);
                 bytes.extend(amount.to_be_bytes());
             }
@@ -197,7 +199,7 @@ impl NewTransactionData {
         Ok(bytes)
     }
 
-    fn identifier(&self) -> u8 {
+    fn identifier(&self) -> u32 {
         match self {
             NewTransactionData::Transfer         { .. } => 0,
             NewTransactionData::Join             { .. } => 1,
