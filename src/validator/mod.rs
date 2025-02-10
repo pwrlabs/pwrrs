@@ -8,8 +8,8 @@ pub struct Validator {
     pub ip: IpAddr,
     #[serde(default)]
     pub bad_actor: bool,
-    pub voting_power: u64,
-    pub total_shares: u64,
+    pub voting_power: u128,
+    pub total_shares: u128,
     pub delegators_count: u32,
     pub status: String,
 }
