@@ -1,11 +1,10 @@
-use std::net::IpAddr;
 use serde::{Deserialize};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Validator {
     pub address: String,
-    pub ip: IpAddr,
+    pub ip: String,
     #[serde(default)]
     pub bad_actor: bool,
     pub voting_power: u128,
