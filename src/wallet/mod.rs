@@ -1,5 +1,6 @@
 pub mod types;
 pub mod keys;
+pub mod aes256;
 use hex;
 
 use std::{fmt::Display, hash::Hash};
@@ -7,6 +8,8 @@ use k256::ecdsa::{
     signature::DigestVerifier, Error, Signature, SigningKey,
 };
 use sha3::{Digest, Keccak256};
+use aes256::AES256;
+use rand::rngs::OsRng;
 
 use crate::wallet::types::{PublicKey, Wallet};
 use crate::transaction::types::{NewTransactionData, Transaction};
@@ -18,8 +21,7 @@ impl Wallet {
     #[cfg(feature = "rand")]
     /// Generate a new wallet using random private key.
     pub fn random() -> Self {
-        let mut thread_rng = rand::thread_rng();
-        let signing_key = SigningKey::random(&mut thread_rng);
+        let signing_key = SigningKey::random(&mut OsRng);
 
         Self {
             private_key: signing_key,
@@ -70,6 +72,24 @@ impl Wallet {
     pub fn get_private_key(&self) -> String {
         let pk = self.private_key.to_bytes();
         format!("0x{}", hex::encode(pk))
+    }
+
+    pub fn store_wallet(&self, path: &str, password: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let private_key_bytes = self.private_key.to_bytes().as_slice().to_vec();
+
+        let encrypted_private_key = AES256::encrypt(&private_key_bytes, password)
+            .map_err(|e| format!("Encryption error: {:?}", e))?;
+
+        std::fs::write(path, encrypted_private_key)?;
+
+        Ok(())
+    }
+
+    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        let encrypted_data = std::fs::read(path).ok()?;
+        let private_key_bytes = AES256::decrypt(&encrypted_data, password).ok()?;
+        let private_key = SigningKey::from_slice(&private_key_bytes).ok()?;
+        Some(Self { private_key })
     }
 
     pub fn get_address(&self) -> String {
