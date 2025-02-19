@@ -1,4 +1,5 @@
 pub mod types;
+pub mod tx_subscription;
 
 use reqwest::{Client, StatusCode};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -8,6 +9,8 @@ use url::Url;
 
 pub use self::types::RPC;
 use self::types::RpcError;
+use tx_subscription::{IvaTransactionSubscription, IvaTransactionHandler};
+use std::sync::Arc;
 
 use crate::{
     block::Block,
@@ -759,5 +762,23 @@ impl RPC {
             response.status(),
             response.json().await.map_err(RpcError::Deserialization)?,
         ))
+    }
+
+    pub fn subscribe_to_iva_transactions(
+        self: Arc<Self>,
+        vm_id: u64, 
+        starting_block: u64,
+        handler: Arc<dyn IvaTransactionHandler>,
+        _poll_interval: Option<u64>,
+    ) -> IvaTransactionSubscription {
+        let mut subscription = IvaTransactionSubscription::new(
+            self,
+            vm_id,
+            starting_block,
+            handler,
+            _poll_interval.unwrap_or(100),
+        );
+        subscription.start();
+        subscription
     }
 }
