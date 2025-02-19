@@ -1,12 +1,13 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Cargo build
+**/target
 
-# dependencies
-/target
-/Cargo.lock
+# Cargo build
+**/target
 
-# misc
-*.DS_Store
+# MacOS nuisances
+.DS_Store
 
-# local env files
-.env*.local
+# Env
 .env
+
+my_wallet.*

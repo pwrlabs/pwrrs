@@ -5,7 +5,11 @@ use pwr_rs::{
 #[tokio::main]
 async fn main() {
     let private_key = "0x04828e90065864c111871769c601d7de2246570b39dd37c19ccac16c14b18f72";
-    let wallet = Wallet::from_hex(&private_key).unwrap();
+    Wallet::from_hex(&private_key).unwrap()
+        .store_wallet("my_wallet.dat", "1234")
+        .expect("Failed to store wallet");
+
+    let wallet = Wallet::load_wallet("my_wallet.dat", "1234").expect("Failed to load wallet");
 
     let address = wallet.get_address();
     println!("Address: {address}");

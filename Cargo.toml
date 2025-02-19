@@ -1,28 +1,32 @@
 [package]
 name = "pwr-rs"
-version = "0.2.9"
+version = "0.3.0"
 edition = "2021"
-authors = ["Hamid R. K. Pishghadam <kaveh@riseup.net>"]
+authors = ["PWR Labs <devservices@pwrlabs.io>"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/pwrlabs/pwrrs"
 homepage = "https://pwrlabs.io/"
+documentation = "https://docs.pwrlabs.io/"
 description = """
-PWR Chain Rust Tool
+Complete PWR Chain library in Rust
 """
-keywords = ["pwr", "sdk", "tool", "async"]
-rust-version = "1.63.0"
+keywords = ["pwr", "sdk", "layers", "web3"]
 
 [dependencies]
-k256 = { version = "0.13", default-features = false, features = ["ecdsa", "alloc"] }
+k256 = { version = "0.13.4", default-features = false, features = ["ecdsa", "alloc"] }
 hex = "0.4.3"
 sha3 = "0.10.8"
+aes = "0.8.4"
+pbkdf2 = "0.12.2"
+sha2 = "0.10.8"
+cbc = { version = "0.1", features = ["std"] }
 rand = { version = "0.8.5", optional = true }
-reqwest = { version = "0.12.5", features = ["json"], optional = true }
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = { version = "1.0.108", optional = true }
-borsh = { version = "1.5", features = ["derive"], optional = true }
-url = { version = "2.5.0", optional = true }
+reqwest = { version = "0.12.12", features = ["json"], optional = true }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = { version = "1.0.138", optional = true }
+borsh = { version = "1.5.5", features = ["derive"], optional = true }
+url = { version = "2.5.4", optional = true }
 
 [features]
 default = ["rpc", "rand"]
