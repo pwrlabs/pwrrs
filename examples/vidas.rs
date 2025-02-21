@@ -1,7 +1,7 @@
 use pwr_rs::{
     RPC,
     transaction::types::VMDataTransaction,
-    rpc::tx_subscription::IvaTransactionHandler
+    rpc::tx_subscription::VidaTransactionHandler
 };
 use std::sync::Arc;
 
@@ -13,8 +13,8 @@ async fn main() {
     let starting_block = rpc.get_latest_block_number().await.unwrap();
 
     struct Handler(Box<dyn Fn(VMDataTransaction) + Send + Sync>);
-    impl IvaTransactionHandler for Handler {
-        fn process_iva_transactions(&self, tx: VMDataTransaction) {
+    impl VidaTransactionHandler for Handler {
+        fn process_vida_transactions(&self, tx: VMDataTransaction) {
             (self.0)(tx)
         }
     }
@@ -24,7 +24,7 @@ async fn main() {
         println!("DATA: {data:?}");
     })));
 
-    let shit = rpc.subscribe_to_iva_transactions(vm_id, starting_block, handler, None);
+    let shit = rpc.subscribe_to_vida_transactions(vm_id, starting_block, handler, None);
     println!("SHIT: {:?}", shit.get_vm_id());
 
     loop {

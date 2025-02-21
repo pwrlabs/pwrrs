@@ -6,28 +6,28 @@ use log::{error};
 use crate::{RPC, transaction::types::VMDataTransaction};
 use tokio::runtime::Runtime;
 
-pub struct IvaTransactionSubscription {
+pub struct VidaTransactionSubscription {
     pwrrs: Arc<RPC>,
     vm_id: u64,
     starting_block: u64,
     latest_checked_block: u64,
-    handler: Arc<dyn IvaTransactionHandler>,
+    handler: Arc<dyn VidaTransactionHandler>,
     pause: Arc<AtomicBool>,
     stop: Arc<AtomicBool>,
     running: Arc<AtomicBool>,
     thread_handle: Option<JoinHandle<()>>,
 }
 
-pub trait IvaTransactionHandler: Send + Sync {
-    fn process_iva_transactions(&self, transaction: VMDataTransaction);
+pub trait VidaTransactionHandler: Send + Sync {
+    fn process_vida_transactions(&self, transaction: VMDataTransaction);
 }
 
-impl IvaTransactionSubscription {
+impl VidaTransactionSubscription {
     pub fn new(
         pwrrs: Arc<RPC>,
         vm_id: u64,
         starting_block: u64,
-        handler: Arc<dyn IvaTransactionHandler>,
+        handler: Arc<dyn VidaTransactionHandler>,
         _poll_interval: u64,
     ) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl IvaTransactionSubscription {
 
     pub fn start(&mut self) {
         if self.running.load(Ordering::SeqCst) {
-            error!("IvaTransactionSubscription is already running");
+            error!("VidaTransactionSubscription is already running");
             return;
         }
     
@@ -62,7 +62,7 @@ impl IvaTransactionSubscription {
         let running = Arc::clone(&self.running);
     
         let thread = thread::Builder::new()
-            .name(format!("IvaTransactionSubscription:IVA-ID-{}", vm_id))
+            .name(format!("VidaTransactionSubscription:IVA-ID-{}", vm_id))
             .spawn(move || {
                 let rt = Runtime::new().expect("Failed to create runtime");
                 rt.block_on(async {
@@ -81,7 +81,7 @@ impl IvaTransactionSubscription {
                             if effective_latest_block >= current_block {
                                 if let Ok(transactions) = pwrrs.get_vm_data_transactions(current_block, effective_latest_block, vm_id).await {
                                     for transaction in transactions {
-                                        handler.process_iva_transactions(transaction);
+                                        handler.process_vida_transactions(transaction);
                                     }
                                     current_block = effective_latest_block + 1;
                                 }
@@ -133,7 +133,7 @@ impl IvaTransactionSubscription {
         self.vm_id
     }
 
-    pub fn get_handler(&self) -> Arc<dyn IvaTransactionHandler> {
+    pub fn get_handler(&self) -> Arc<dyn VidaTransactionHandler> {
         Arc::clone(&self.handler)
     }
 }
