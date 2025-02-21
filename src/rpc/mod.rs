@@ -9,7 +9,7 @@ use url::Url;
 
 pub use self::types::RPC;
 use self::types::RpcError;
-use tx_subscription::{IvaTransactionSubscription, IvaTransactionHandler};
+use tx_subscription::{VidaTransactionSubscription, VidaTransactionHandler};
 use std::sync::Arc;
 
 use crate::{
@@ -764,14 +764,14 @@ impl RPC {
         ))
     }
 
-    pub fn subscribe_to_iva_transactions(
+    pub fn subscribe_to_vida_transactions(
         self: Arc<Self>,
         vm_id: u64, 
         starting_block: u64,
-        handler: Arc<dyn IvaTransactionHandler>,
+        handler: Arc<dyn VidaTransactionHandler>,
         _poll_interval: Option<u64>,
-    ) -> IvaTransactionSubscription {
-        let mut subscription = IvaTransactionSubscription::new(
+    ) -> VidaTransactionSubscription {
+        let mut subscription = VidaTransactionSubscription::new(
             self,
             vm_id,
             starting_block,
