@@ -66,24 +66,24 @@ async fn main() {
         let active_validators = rpc.get_active_validators().await.unwrap();
         println!("ActiveValidators: {active_validators:?}");
 
-        let trx_hash = wallet.transfer_pwr(
+        let tx_hash = wallet.transfer_pwr(
             "0x3B3B69093879E7B6F28366FA3C32762590FF547E".into(),
             1000,
         ).await;
-        println!("Transfer tx hash: {trx_hash}");
+        println!("Transfer tx hash: {}", tx_hash.data.unwrap());
 
         let data = vec!["Hello World!"];
         let data_as_bytes: Vec<u8> = data.into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
         let tx_hash = wallet.send_vm_data(1234, data_as_bytes).await;
-        println!("Send VM Data tx hash: {tx_hash}");
+        println!("Send VM Data tx hash: {}", tx_hash.data.unwrap());
 
         let data = vec!["Hello World!"];
         let data_as_bytes: Vec<u8> = data.into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
         let tx_hash = wallet.send_payable_vm_data(1234, 1000, data_as_bytes).await;
-        println!("Send Payable VM Data tx hash: {tx_hash}");
+        println!("Send Payable VM Data tx hash: {}", tx_hash.data.unwrap());
     }
 }
