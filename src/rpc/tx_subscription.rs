@@ -8,7 +8,7 @@ use tokio::runtime::Runtime;
 
 pub struct VidaTransactionSubscription {
     pwrrs: Arc<RPC>,
-    vm_id: u64,
+    vida_id: u64,
     starting_block: u64,
     latest_checked_block: u64,
     handler: Arc<dyn VidaTransactionHandler>,
@@ -25,14 +25,14 @@ pub trait VidaTransactionHandler: Send + Sync {
 impl VidaTransactionSubscription {
     pub fn new(
         pwrrs: Arc<RPC>,
-        vm_id: u64,
+        vida_id: u64,
         starting_block: u64,
         handler: Arc<dyn VidaTransactionHandler>,
         _poll_interval: u64,
     ) -> Self {
         Self {
             pwrrs,
-            vm_id,
+            vida_id,
             starting_block,
             latest_checked_block: 0,
             handler,
@@ -55,14 +55,14 @@ impl VidaTransactionSubscription {
     
         let mut current_block = self.starting_block;
         let pwrrs = Arc::clone(&self.pwrrs);
-        let vm_id = self.vm_id;
+        let vida_id = self.vida_id;
         let handler = Arc::clone(&self.handler);
         let pause = Arc::clone(&self.pause);
         let stop = Arc::clone(&self.stop);
         let running = Arc::clone(&self.running);
     
         let thread = thread::Builder::new()
-            .name(format!("VidaTransactionSubscription:IVA-ID-{}", vm_id))
+            .name(format!("VidaTransactionSubscription:IVA-ID-{}", vida_id))
             .spawn(move || {
                 let rt = Runtime::new().expect("Failed to create runtime");
                 rt.block_on(async {
@@ -79,7 +79,7 @@ impl VidaTransactionSubscription {
                             };
     
                             if effective_latest_block >= current_block {
-                                if let Ok(transactions) = pwrrs.get_vm_data_transactions(current_block, effective_latest_block, vm_id).await {
+                                if let Ok(transactions) = pwrrs.get_vm_data_transactions(current_block, effective_latest_block, vida_id).await {
                                     for transaction in transactions {
                                         handler.process_vida_transactions(transaction);
                                     }
@@ -129,8 +129,8 @@ impl VidaTransactionSubscription {
         self.starting_block
     }
 
-    pub fn get_vm_id(&self) -> u64 {
-        self.vm_id
+    pub fn get_vida_id(&self) -> u64 {
+        self.vida_id
     }
 
     pub fn get_handler(&self) -> Arc<dyn VidaTransactionHandler> {
