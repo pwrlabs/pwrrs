@@ -62,7 +62,7 @@ impl VidaTransactionSubscription {
         let running = Arc::clone(&self.running);
     
         let thread = thread::Builder::new()
-            .name(format!("VidaTransactionSubscription:IVA-ID-{}", vida_id))
+            .name(format!("VidaTransactionSubscription:VIDA-ID-{}", vida_id))
             .spawn(move || {
                 let rt = Runtime::new().expect("Failed to create runtime");
                 rt.block_on(async {
