@@ -90,8 +90,10 @@ async fn main() {
     let private_key = "0xac0974bec...f80";
     let wallet = Wallet::from_hex(&private_key).unwrap();
 
-    let trx_hash = wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
-    println!("Transaction Hash: {trx_hash}");
+    let response = wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
+    if response.success {
+        println!("Transaction Hash: {}", response.data.unwrap());
+    }
 }
 ```
 
@@ -106,8 +108,10 @@ async fn main() {
     let data = vec!["Hello World!"];
     let data_as_bytes: Vec<u8> = data.into_iter().flat_map(|s| s.as_bytes().to_vec()).collect();
 
-    let tx_hash = wallet.send_vm_data(123, data_as_bytes).await;
-    println!("Transaction Hash: {tx_hash}");
+    let response = wallet.send_vm_data(123, data_as_bytes).await;
+    if response.success {
+        println!("Transaction Hash: {}", response.data.unwrap());
+    }
 }
 ```
 
