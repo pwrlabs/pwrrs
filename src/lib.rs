@@ -23,5 +23,7 @@ pub mod validator;
 pub mod rpc;
 pub mod wallet;
 
-pub use wallet::types::{PublicKey, Wallet};
+mod config;
+
+pub use wallet::types::{PublicKey, Wallet, Falcon512Wallet};
 pub use rpc::RPC;

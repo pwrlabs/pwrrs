@@ -4,9 +4,51 @@ pub mod stream;
 
 use self::types::Transaction;
 pub use self::types::NewTransactionData;
-use crate::Wallet;
+use crate::{Wallet, Falcon512Wallet};
+use crate::config::falcon::Falcon;
+use pqcrypto_falcon::falcon512;
+use pqcrypto_traits::sign::*;
 
 impl NewTransactionData {
+    pub fn fee_per_byte(&self) -> Option<u64> {
+        match self {
+            NewTransactionData::FalconSetPublicKey { fee_per_byte, .. } => Some(*fee_per_byte),
+            NewTransactionData::FalconJoinAsValidator { fee_per_byte, .. } => Some(*fee_per_byte),
+            NewTransactionData::FalconDelegate { fee_per_byte, .. } => Some(*fee_per_byte),
+            NewTransactionData::FalconChangeIp { fee_per_byte, .. } => Some(*fee_per_byte),
+            NewTransactionData::FalconClaimActiveNodeSpot { fee_per_byte } => Some(*fee_per_byte),
+            NewTransactionData::FalconTransfer { fee_per_byte, .. } => Some(*fee_per_byte),
+            NewTransactionData::FalconVmData { fee_per_byte, .. } => Some(*fee_per_byte),
+            _ => None,
+        }
+    }
+
+    pub fn falcon512_serialize_for_broadcast(
+        &self,
+        nonce: u32,
+        chain_id: u8,
+        wallet: &Falcon512Wallet,
+    ) -> Result<Vec<u8>, &'static str> {
+        let mut bytes = Vec::new();
+        bytes.extend(self.identifier().to_be_bytes());
+        bytes.extend(chain_id.to_be_bytes());
+        bytes.extend(nonce.to_be_bytes());
+        
+        if let Some(fee) = self.fee_per_byte() {
+            bytes.extend(fee.to_be_bytes());
+        }
+        
+        bytes.extend(wallet.address.clone());
+        bytes.extend(self.transaction_bytes()?);
+
+        let private_key = falcon512::SecretKey::from_bytes(&wallet.private_key).map_err(|_| "Invalid private key")?;
+        let signature = Falcon::sign_512(&bytes, &private_key).as_bytes().to_vec();
+        bytes.extend((signature.len() as u16).to_be_bytes());
+        bytes.extend(signature);
+
+        Ok(bytes)
+    }
+
     pub fn serialize_for_broadcast(
         &self,
         nonce: u32,
@@ -32,7 +74,7 @@ impl NewTransactionData {
                 bytes.extend(amount.to_be_bytes());
                 bytes.extend(hex::decode(recipient[2..].to_string()).map_err(|_| "Invalid recipient address")?);
             }
-            NewTransactionData::Join { ip } => {
+            NewTransactionData::JoinAsValidator { ip } => {
                 bytes.extend(ip.clone().into_bytes());
             }
             NewTransactionData::ClaimSpot { validator } => {
@@ -193,7 +235,39 @@ impl NewTransactionData {
             NewTransactionData::VoteOnProposalTxn { proposal_hash, vote } => {
                 bytes.extend(hex::decode(proposal_hash[2..].to_string()).map_err(|_| "Invalid proposal hash")?);
                 bytes.extend(vote.to_be_bytes());
-            }
+            },
+
+            // Falcon transaction types
+            NewTransactionData::FalconSetPublicKey { public_key, .. } => {
+                let public_key = hex::decode(&public_key).map_err(|_| "Invalid public key")?;
+
+                bytes.extend((public_key.len() as u16).to_be_bytes());
+                bytes.extend(public_key);
+            },
+            NewTransactionData::FalconJoinAsValidator { ip, .. } => {
+                let ip_bytes = ip.as_bytes();
+                bytes.extend((ip_bytes.len() as u16).to_be_bytes());
+                bytes.extend(ip_bytes);
+            },
+            NewTransactionData::FalconDelegate { validator, pwr_amount, .. } => {
+                bytes.extend(hex::decode(&validator[2..]).map_err(|_| "Invalid validator address")?);
+                bytes.extend(pwr_amount.to_be_bytes());
+            },
+            NewTransactionData::FalconChangeIp { new_ip, .. } => {
+                let ip_bytes = new_ip.as_bytes();
+                bytes.extend((ip_bytes.len() as u16).to_be_bytes());
+                bytes.extend(ip_bytes);
+            },
+            NewTransactionData::FalconClaimActiveNodeSpot { .. } => { },
+            NewTransactionData::FalconTransfer { receiver, amount, .. } => {
+                bytes.extend(hex::decode(&receiver[2..]).map_err(|_| "Invalid receiver address")?);
+                bytes.extend(amount.to_be_bytes());
+            },
+            NewTransactionData::FalconVmData { vm_id, data, .. } => {
+                bytes.extend(vm_id.to_be_bytes());
+                bytes.extend((data.len() as u32).to_be_bytes());
+                bytes.extend(data);
+            },
         }
 
         Ok(bytes)
@@ -202,7 +276,7 @@ impl NewTransactionData {
     fn identifier(&self) -> u32 {
         match self {
             NewTransactionData::Transfer         { .. } => 0,
-            NewTransactionData::Join             { .. } => 1,
+            NewTransactionData::JoinAsValidator  { .. } => 1,
             NewTransactionData::ClaimSpot        { .. } => 2,
             NewTransactionData::Delegate         { .. } => 3,
             NewTransactionData::Withdraw         { .. } => 4,
@@ -229,6 +303,15 @@ impl NewTransactionData {
             NewTransactionData::ChangeVmOwnerTxnFeeShareProposal    { .. } => 26,
             NewTransactionData::OtherProposalTxn                    { .. } => 27,
             NewTransactionData::VoteOnProposalTxn                   { .. } => 28,
+
+            // Falcon transaction types
+            NewTransactionData::FalconSetPublicKey        { .. } => 1001,
+            NewTransactionData::FalconJoinAsValidator     { .. } => 1002,
+            NewTransactionData::FalconDelegate            { .. } => 1003,
+            NewTransactionData::FalconChangeIp            { .. } => 1004,
+            NewTransactionData::FalconClaimActiveNodeSpot { .. } => 1005,
+            NewTransactionData::FalconTransfer            { .. } => 1006,
+            NewTransactionData::FalconVmData              { .. } => 1007,
         }
     }
 
