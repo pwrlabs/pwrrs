@@ -13,7 +13,7 @@ use rand::rngs::OsRng;
 
 use crate::wallet::types::{PublicKey, Wallet};
 use crate::transaction::types::{NewTransactionData, Transaction};
-use crate::rpc::RPC;
+use crate::rpc::{RPC, BroadcastResponse};
 
 const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
 
@@ -110,244 +110,244 @@ impl Wallet {
         return nonce;
     }
 
-    pub async fn transfer_pwr(&self, recipient: String, amount: u64) -> String {
+    pub async fn transfer_pwr(&self, recipient: String, amount: u64) -> BroadcastResponse {
         let tx = NewTransactionData::Transfer {
             amount: amount,
             recipient: recipient,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&tx, &self).await;
+        return response;
     }
 
-    pub async fn send_vm_data(&self, vm_id: u64, data: Vec<u8>) -> String {
+    pub async fn send_vm_data(&self, vm_id: u64, data: Vec<u8>) -> BroadcastResponse {
         let new_tx = NewTransactionData::VmData { vm_id: vm_id, data: data };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn send_payable_vm_data(&self, vm_id: u64, amount: u64, data: Vec<u8>) -> String {
+    pub async fn send_payable_vm_data(&self, vm_id: u64, amount: u64, data: Vec<u8>) -> BroadcastResponse {
         let new_tx = NewTransactionData::PayableVmData { 
             vm_id: vm_id, 
             data: data, 
             amount: amount 
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn claim_vm_id(&self, vm_id: u64) -> String {
+    pub async fn claim_vm_id(&self, vm_id: u64) -> BroadcastResponse {
         let new_tx = NewTransactionData::ClaimVmID { vm_id: vm_id };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn join(&self, ip: String) -> String {
+    pub async fn join(&self, ip: String) -> BroadcastResponse {
         let new_tx = NewTransactionData::Join { ip: ip };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn claim_spot(&self) -> String {
+    pub async fn claim_spot(&self) -> BroadcastResponse {
         let address = self.get_address().to_string().strip_prefix("0x").unwrap_or(&self.get_address()).to_string();
         let new_tx = NewTransactionData::ClaimSpot { validator: address };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn delegate(&self, validator: String, amount: u64) -> String {
+    pub async fn delegate(&self, validator: String, amount: u64) -> BroadcastResponse {
         let new_tx = NewTransactionData::Delegate {
             amount: amount,
             validator: validator,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn withdraw(&self, validator: String, shares: u64) -> String {
+    pub async fn withdraw(&self, validator: String, shares: u64) -> BroadcastResponse {
         let new_tx = NewTransactionData::Withdraw {
             shares: shares,
             validator: validator,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn set_guardian(&self, guardian: String, guardian_expiry_date: u64) -> String {
+    pub async fn set_guardian(&self, guardian: String, guardian_expiry_date: u64) -> BroadcastResponse {
         let new_tx = NewTransactionData::SetGuardian {
             guardian_expiry_date: guardian_expiry_date,
             guardian: guardian,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn send_guardian_approval_transaction(&self, transactions: Vec<Transaction>) -> String {
+    pub async fn send_guardian_approval_transaction(&self, transactions: Vec<Transaction>) -> BroadcastResponse {
         let new_tx = NewTransactionData::GuardianApproval { transactions: transactions };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn remove_guardian(&self) -> String {
+    pub async fn remove_guardian(&self) -> BroadcastResponse {
         let new_tx = NewTransactionData::RemoveGuardian;
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn set_conduits(&self, vm_id: u64, conduits: Vec<String>) -> String {
+    pub async fn set_conduits(&self, vm_id: u64, conduits: Vec<String>) -> BroadcastResponse {
         let new_tx = NewTransactionData::SetConduits { vm_id: vm_id, conduits: conduits };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn add_conduits(&self, vm_id: u64, conduits: Vec<u8>) -> String {
+    pub async fn add_conduits(&self, vm_id: u64, conduits: Vec<u8>) -> BroadcastResponse {
         let new_tx = NewTransactionData::AddConduits { vm_id: vm_id, conduits: conduits };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn move_stake(
         &self, shares_amount: u64, from_validator: String, to_validator: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::MoveStake {
             shares_amount: shares_amount,
             from_validator: from_validator,
             to_validator: to_validator,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_early_withdraw_penalty(
         &self, withdraw_penalty: u32, withdraw_penalty_time: u64, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeEarlyWithdrawPenaltyProposal {
             title: title,
             description: description,
             withdraw_penalty_time: withdraw_penalty_time,
             withdraw_penalty: withdraw_penalty,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_fee_per_byte(
         &self, fee_per_byte: u64, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeFeePerByteProposal {
             title: title,
             description: description,
             fee_per_byte: fee_per_byte,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_max_block_size(
         &self, max_block_size: u32, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeMaxBlockSizeProposal {
             title: title,
             description: description,
             max_block_size: max_block_size,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_max_txn_size(
         &self, max_txn_size: u32, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeMaxTxnSizeProposal {
             title: title,
             description: description,
             max_txn_size: max_txn_size,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_overall_burn_percentage(
         &self, burn_percentage: u32, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeOverallBurnPercentageProposal {
             title: title,
             description: description,
             burn_percentage: burn_percentage,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash; 
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response; 
     }
 
     pub async fn create_proposal_change_reward_per_year(
         &self, reward_per_year: u64, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeRewardPerYearProposal {
             title: title,
             description: description,
             reward_per_year: reward_per_year,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_validator_count_limit(
         &self, validator_count_limit: u32, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeValidatorCountLimitProposal {
             title: title,
             description: description,
             validator_count_limit: validator_count_limit,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_validator_joining_fee(
         &self, joining_fee: u64, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeValidatorJoiningFeeProposal {
             title: title,
             description: description,
             joining_fee: joining_fee,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_vm_id_claiming_fee(
         &self, claiming_fee: u64, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeVmIdClaimingFeeProposal {
             title: title,
             description: description,
             claiming_fee: claiming_fee,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     pub async fn create_proposal_change_vm_owner_txn_fee_share(
         &self, fee_share: u32, title: String, description: String
-    ) -> String {
+    ) -> BroadcastResponse {
         let new_tx = NewTransactionData::ChangeVmOwnerTxnFeeShareProposal {
             title: title,
             description: description,
             fee_share: fee_share,
         };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn create_proposal_other_proposal(&self, title: String, description: String) -> String {
+    pub async fn create_proposal_other_proposal(&self, title: String, description: String) -> BroadcastResponse {
         let new_tx = NewTransactionData::OtherProposalTxn { title: title, description: description };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
-    pub async fn vote_on_proposal(&self, proposal_hash: String, vote: u8) -> String {
+    pub async fn vote_on_proposal(&self, proposal_hash: String, vote: u8) -> BroadcastResponse {
         let new_tx = NewTransactionData::VoteOnProposalTxn { proposal_hash: proposal_hash, vote: vote };
-        let hash = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await.unwrap();
-        return hash;
+        let response = (self.get_rpc().await).broadcast_transaction(&new_tx, &self).await;
+        return response;
     }
 
     async fn get_rpc(&self) -> RPC {

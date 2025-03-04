@@ -7,9 +7,9 @@ use sha3::{Digest, Keccak256};
 use std::collections::HashMap;
 use url::Url;
 
-pub use self::types::RPC;
+pub use self::types::{RPC, BroadcastResponse, ResponseData, BroadcastRequest};
 use self::types::RpcError;
-use tx_subscription::{IvaTransactionSubscription, IvaTransactionHandler};
+use tx_subscription::{VidaTransactionSubscription, VidaTransactionHandler};
 use std::sync::Arc;
 
 use crate::{
@@ -690,41 +690,60 @@ impl RPC {
         &self,
         transaction: &NewTransactionData,
         wallet: &Wallet,
-    ) -> Result<String, RpcError> {
-        #[derive(Deserialize)]
-        struct Responce {
-            message: String,
-        }
+    ) -> BroadcastResponse {
+        let nonce = match self.get_nonce_of_address(&wallet.get_address()).await {
+            Ok(nonce) => nonce,
+            Err(e) => {
+                return BroadcastResponse {
+                    success: false,
+                    data: None,
+                    error: format!("Failed to get nonce: {e:?}"),
+                }
+            }
+        };
 
-        #[derive(Serialize)]
-        struct Request {
-            txn: String,
-        }
-
-        let nonce = self.get_nonce_of_address(&wallet.get_address()).await?;
+        let txn_bytes = match transaction.serialize_for_broadcast(nonce, self.chain_id, wallet) {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                return BroadcastResponse {
+                    success: false,
+                    data: None,
+                    error: format!("Failed to serialize transaction: {}", e),
+                }
+            }
+        };
 
         let mut hasher = Keccak256::new();
-        let txn_bytes = transaction
-            .serialize_for_broadcast(nonce, self.chain_id, wallet)
-            .map_err(|e| RpcError::FailedToBroadcastTransaction(e.to_string()))?;
         hasher.update(&txn_bytes);
         let txn_hash = hasher.finalize();
 
-        let request = Request {
+        let request = BroadcastRequest {
             txn: hex::encode(txn_bytes),
         };
 
-        let (status, resp) = self
-            .call_rpc_post::<Responce, _>("/broadcast/", request)
-            .await?;
+        let (status, resp_data) = match self.call_rpc_post::<ResponseData, _>("/broadcast/", request).await {
+            Ok(result) => result,
+            Err(e) => {
+                return BroadcastResponse {
+                    success: false,
+                    data: None,
+                    error: format!("RPC call failed: {e:?}"),
+                }
+            }
+        };
 
         if status != 200 {
-            Err(RpcError::FailedToBroadcastTransaction(format!(
-                "RpcError: {}",
-                resp.message
-            )))
+            BroadcastResponse {
+                success: false,
+                data: None,
+                error: format!("Failed to broadcast transaction: {}", resp_data.message),
+            }
         } else {
-            Ok(format!("0x{}", hex::encode_upper(txn_hash)))
+            BroadcastResponse {
+                success: true,
+                data: Some(format!("0x{}", hex::encode_upper(txn_hash))),
+                error: "".to_owned(),
+            }
         }
     }
 
@@ -764,14 +783,14 @@ impl RPC {
         ))
     }
 
-    pub fn subscribe_to_iva_transactions(
+    pub fn subscribe_to_vida_transactions(
         self: Arc<Self>,
         vm_id: u64, 
         starting_block: u64,
-        handler: Arc<dyn IvaTransactionHandler>,
+        handler: Arc<dyn VidaTransactionHandler>,
         _poll_interval: Option<u64>,
-    ) -> IvaTransactionSubscription {
-        let mut subscription = IvaTransactionSubscription::new(
+    ) -> VidaTransactionSubscription {
+        let mut subscription = VidaTransactionSubscription::new(
             self,
             vm_id,
             starting_block,
