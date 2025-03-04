@@ -14,3 +14,10 @@ pub struct Wallet {
 pub struct PublicKey {
     pub verifying_key: VerifyingKey,
 }
+
+#[derive(Clone, PartialEq)]
+pub struct Falcon512Wallet {
+    pub public_key: Vec<u8>,
+    pub private_key: Vec<u8>,
+    pub address: Vec<u8>,
+}

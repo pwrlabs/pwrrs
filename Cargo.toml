@@ -29,6 +29,8 @@ serde_json = { version = "1.0.138", optional = true }
 borsh = { version = "1.5.5", features = ["derive"], optional = true }
 url = { version = "2.5.4", optional = true }
 tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
+pqcrypto-falcon = "0.4.0"
+pqcrypto-traits = "0.3.5"
 
 [features]
 default = ["rpc", "rand"]

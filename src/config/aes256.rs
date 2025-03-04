@@ -12,6 +12,7 @@ const SALT: &[u8] = b"your-salt-value";
 const IV_LENGTH: usize = 16;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum CryptoError {
     EncryptionError(String),
     DecryptionError(String),

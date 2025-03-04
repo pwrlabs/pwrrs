@@ -91,7 +91,7 @@ pub enum ConcreteTransaction {
         #[serde(default)]
         shares: u64,
     },
-    Join {
+    JoinAsValidator {
         #[serde(default)]
         ip: String,
     },
@@ -315,6 +315,76 @@ pub enum ConcreteTransaction {
         #[serde(default = "default_vote")]
         vote: u8,
     },
+    
+    // Falcon transaction types
+    #[serde(rename = "Falcon Set Public Key")]
+    FalconSetPublicKey {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(with = "hex_serde", default)]
+        public_key: Vec<u8>,
+    },
+    
+    #[serde(rename = "Falcon Join As Validator")]
+    FalconJoinAsValidator {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(default)]
+        ip: String,
+    },
+    
+    #[serde(rename = "Falcon Delegate")]
+    FalconDelegate {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(default = "default_hex")]
+        validator: String,
+        
+        #[serde(default, rename = "pwrAmount")]
+        pwr_amount: u64,
+    },
+    
+    #[serde(rename = "Falcon Change IP")]
+    FalconChangeIp {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(default, rename = "newIp")]
+        new_ip: String,
+    },
+    
+    #[serde(rename = "Falcon Claim Active Node Spot")]
+    FalconClaimActiveNodeSpot {
+        #[serde(default)]
+        fee_per_byte: u64,
+    },
+    
+    #[serde(rename = "Falcon Transfer")]
+    FalconTransfer {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(default = "default_hex")]
+        receiver: String,
+        
+        #[serde(default)]
+        amount: u64,
+    },
+    
+    #[serde(rename = "Falcon VM Data")]
+    FalconVmData {
+        #[serde(default)]
+        fee_per_byte: u64,
+        
+        #[serde(rename = "vmId", default)]
+        vm_id: u64,
+        
+        #[serde(with = "hex_serde", default)]
+        data: Vec<u8>,
+    },
 }
 
 pub enum NewTransactionData {
@@ -349,7 +419,7 @@ pub enum NewTransactionData {
         vm_id: u64,
     },
 
-    Join {
+    JoinAsValidator {
         ip: String,
     },
 
@@ -453,6 +523,44 @@ pub enum NewTransactionData {
     VoteOnProposalTxn {
         proposal_hash: String,
         vote: u8,
+    },
+    
+    // Falcon transaction types
+    FalconSetPublicKey {
+        fee_per_byte: u64,
+        public_key: String,
+    },
+    
+    FalconJoinAsValidator {
+        fee_per_byte: u64,
+        ip: String,
+    },
+    
+    FalconDelegate {
+        fee_per_byte: u64,
+        validator: String,
+        pwr_amount: u64,
+    },
+    
+    FalconChangeIp {
+        fee_per_byte: u64,
+        new_ip: String,
+    },
+    
+    FalconClaimActiveNodeSpot {
+        fee_per_byte: u64,
+    },
+    
+    FalconTransfer {
+        fee_per_byte: u64,
+        receiver: String,
+        amount: u64,
+    },
+    
+    FalconVmData {
+        fee_per_byte: u64,
+        vm_id: u64,
+        data: Vec<u8>,
     },
 }
 
