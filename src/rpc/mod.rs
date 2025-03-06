@@ -14,12 +14,10 @@ use std::sync::Arc;
 
 use crate::{
     block::Block,
-    transaction::types::{NewTransactionData, VMDataTransaction, Penalty},
-    validator::Validator,
-    wallet::types::Wallet
+    transaction::types::{VMDataTransaction, Penalty},
+    validator::Validator
 };
 
-const DEFAULT_FEE_PER_BYTE: u64 = 100;
 const DEFAULT_CHAIN_ID: u8 = 0;
 
 impl RPC {
@@ -32,7 +30,6 @@ impl RPC {
 
         let mut s = Self {
             node_url,
-            fee_per_byte: DEFAULT_FEE_PER_BYTE,
             http_client: Client::new(),
             chain_id: DEFAULT_CHAIN_ID,
         };
@@ -68,8 +65,18 @@ impl RPC {
     }
 
     /// Fetches the current fee-per-byte rate that's been set locally.
-    pub fn get_fee_per_byte(&self) -> u64 {
-        self.fee_per_byte
+    pub async fn get_fee_per_byte(&self) -> Result<u64, RpcError> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Response {
+            fee_per_byte: u64,
+        }
+        let resp = self
+            .call_rpc_get("/feePerByte/")
+            .await
+            .map(|r: Response| r.fee_per_byte)?;
+
+        Ok(resp)
     }
 
     /// Queries the RPC node to get the nonce of a specific address.
@@ -668,51 +675,11 @@ impl RPC {
         .map(|r: Response| r.delegators)
     }
 
-    /// Fetches and updates the current fee per byte from the RPC node.
-    pub async fn update_fee_per_byte(&mut self) -> Result<(), RpcError> {
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct Response {
-            fee_per_byte: u64,
-        }
-        let resp = self
-            .call_rpc_get("/feePerByte/")
-            .await
-            .map(|r: Response| r.fee_per_byte)?;
-
-        self.fee_per_byte = resp;
-
-        Ok(())
-    }
-
     /// Broadcasts a transaction to the network via a specified RPC node.
     pub async fn broadcast_transaction(
         &self,
-        transaction: &NewTransactionData,
-        wallet: &Wallet,
+        txn_bytes: Vec<u8>,
     ) -> BroadcastResponse {
-        let nonce = match self.get_nonce_of_address(&wallet.get_address()).await {
-            Ok(nonce) => nonce,
-            Err(e) => {
-                return BroadcastResponse {
-                    success: false,
-                    data: None,
-                    error: format!("Failed to get nonce: {e:?}"),
-                }
-            }
-        };
-
-        let txn_bytes = match transaction.serialize_for_broadcast(nonce, self.chain_id, wallet) {
-            Ok(bytes) => bytes,
-            Err(e) => {
-                return BroadcastResponse {
-                    success: false,
-                    data: None,
-                    error: format!("Failed to serialize transaction: {}", e),
-                }
-            }
-        };
-
         let mut hasher = Keccak256::new();
         hasher.update(&txn_bytes);
         let txn_hash = hasher.finalize();
