@@ -1,5 +1,5 @@
 pub mod types;
-pub mod tx_subscription;
+pub mod vida;
 
 use reqwest::{Client, StatusCode};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -9,7 +9,7 @@ use url::Url;
 
 pub use self::types::{RPC, BroadcastResponse, ResponseData, BroadcastRequest};
 use self::types::RpcError;
-use tx_subscription::{VidaTransactionSubscription, VidaTransactionHandler};
+use types::{VidaTransactionSubscription, ProcessVidaTransactions};
 use std::sync::Arc;
 
 use crate::{
@@ -754,7 +754,7 @@ impl RPC {
         self: Arc<Self>,
         vm_id: u64, 
         starting_block: u64,
-        handler: Arc<dyn VidaTransactionHandler>,
+        handler: ProcessVidaTransactions,
         _poll_interval: Option<u64>,
     ) -> VidaTransactionSubscription {
         let mut subscription = VidaTransactionSubscription::new(
