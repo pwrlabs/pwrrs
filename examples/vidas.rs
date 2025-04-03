@@ -32,7 +32,7 @@ async fn main() {
 
     subscription.pause();
     subscription.resume();
-    subscription.stop();
+    // subscription.stop();
 
     println!("Latest checked block: {}", subscription.get_latest_checked_block());
 
