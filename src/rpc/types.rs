@@ -1,6 +1,9 @@
 use reqwest::{Client};
 use serde::{Deserialize, Serialize};
 use url::Url;
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
+use crate::transaction::types::VMDataTransaction;
 
 pub struct RPC {
     pub http_client: Client,
@@ -32,3 +35,16 @@ pub struct ResponseData {
 pub struct BroadcastRequest {
     pub txn: String,
 }
+
+pub struct VidaTransactionSubscription {
+    pub pwrrs: Arc<RPC>,
+    pub vida_id: u64,
+    pub starting_block: u64,
+    pub latest_checked_block: Arc<std::sync::atomic::AtomicU64>,
+    pub handler: ProcessVidaTransactions,
+    pub pause: Arc<AtomicBool>,
+    pub stop: Arc<AtomicBool>,
+    pub running: Arc<AtomicBool>,
+}
+
+pub type ProcessVidaTransactions = fn(transaction: VMDataTransaction);
