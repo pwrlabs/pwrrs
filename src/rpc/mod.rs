@@ -750,7 +750,7 @@ impl RPC {
         ))
     }
 
-    pub fn subscribe_to_vida_transactions(
+    pub fn subscribe_to_vida_transactions_with_poll_interval(
         self: Arc<Self>,
         vm_id: u64, 
         starting_block: u64,
@@ -766,5 +766,19 @@ impl RPC {
         );
         subscription.start();
         subscription
+    }
+
+    pub fn subscribe_to_vida_transactions(
+        self: Arc<Self>,
+        vm_id: u64, 
+        starting_block: u64,
+        handler: ProcessVidaTransactions,
+    ) -> VidaTransactionSubscription {
+        self.subscribe_to_vida_transactions_with_poll_interval(
+            vm_id,
+            starting_block,
+            handler,
+            None
+        )
     }
 }
