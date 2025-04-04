@@ -96,7 +96,6 @@ impl VidaTransactionSubscription {
 
     pub fn stop(&self) {
         self.stop.store(true, Ordering::SeqCst);
-        self.running.store(false, Ordering::SeqCst);
     }
 
     pub fn is_running(&self) -> bool {
