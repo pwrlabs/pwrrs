@@ -10,20 +10,25 @@ use crate::wallet::types::{PublicKey, Wallet};
 use crate::transaction::types::{NewTransactionData, Transaction};
 use crate::rpc::{RPC, BroadcastResponse};
 use crate::config::aes256::AES256;
-
-const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
+use crate::wallet::keys::NODE_URL;
 
 impl Wallet {
     #[cfg(feature = "rand")]
-    pub fn random() -> Self {
+    pub fn random_with_rpc_url(rpc_url: &str) -> Self {
         let signing_key = SigningKey::random(&mut OsRng);
 
         Self {
             private_key: signing_key,
+            rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn from_hex(hex_str: &str) -> Result<Self, Error> {
+    #[cfg(feature = "rand")]
+    pub fn random() -> Self {
+        Self::random_with_rpc_url(NODE_URL)
+    }
+
+    pub fn from_hex_with_rpc_url(hex_str: &str, rpc_url: &str) -> Result<Self, Error> {
         let bytes = if hex_str.len() > 2 && (&hex_str[..2] == "0x" || &hex_str[..2] == "0X") {
             hex::decode(&hex_str[2..]).map_err(|_| Error::new())?
         } else {
@@ -31,7 +36,11 @@ impl Wallet {
         };
         let private_key = SigningKey::from_slice(&bytes)?;
 
-        Ok(Self { private_key })
+        Ok(Self { private_key, rpc_url: rpc_url.to_string() })
+    }
+
+    pub fn from_hex(hex_str: &str) -> Result<Self, Error> {
+        Self::from_hex_with_rpc_url(hex_str, NODE_URL)
     }
 
     pub fn to_hex(&self) -> String {
@@ -80,11 +89,15 @@ impl Wallet {
         Ok(())
     }
 
-    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+    pub fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
         let encrypted_data = std::fs::read(path).ok()?;
         let private_key_bytes = AES256::decrypt(&encrypted_data, password).ok()?;
         let private_key = SigningKey::from_slice(&private_key_bytes).ok()?;
-        Some(Self { private_key })
+        Some(Self { private_key, rpc_url: rpc_url.to_string() })
+    }
+
+    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        Self::load_wallet_with_rpc_url(path, password, NODE_URL)
     }
 
     pub fn get_address(&self) -> String {
@@ -402,7 +415,7 @@ impl Wallet {
     }
 
     async fn get_rpc(&self) -> RPC {
-        RPC::new(NODE_URL).await.unwrap()
+        RPC::new(self.rpc_url.as_str()).await.unwrap()
     }
 }
 
