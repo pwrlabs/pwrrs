@@ -10,11 +10,10 @@ use hex;
 use sha3::{Digest, Keccak224};
 use crate::wallet::types::Falcon512Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
-
-const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
+use crate::wallet::keys::NODE_URL;
 
 impl Falcon512Wallet {
-    pub fn new() -> Self {
+    pub fn new_with_rpc_url(rpc_url: &str) -> Self {
         let (public_key, secret_key) = Falcon::generate_keypair_512();
         
         // Get the hash of the public key
@@ -25,10 +24,15 @@ impl Falcon512Wallet {
             public_key: public_key.as_bytes().to_vec(),
             private_key: secret_key.as_bytes().to_vec(),
             address: address,
+            rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn from_keys(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey) -> Self {
+    pub fn new() -> Self {
+        Self::new_with_rpc_url(NODE_URL)
+    }
+
+    pub fn from_keys_with_rpc_url(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey, rpc_url: &str) -> Self {
         // Get the hash of the public key
         let public_key_bytes = public_key.as_bytes();
         let hash = Self::hash224(public_key_bytes);
@@ -38,7 +42,12 @@ impl Falcon512Wallet {
             public_key: public_key.as_bytes().to_vec(),
             private_key: secret_key.as_bytes().to_vec(),
             address: address,
+            rpc_url: rpc_url.to_string(),
         }
+    }
+
+    pub fn from_keys(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey) -> Self {
+        Self::from_keys_with_rpc_url(public_key, secret_key, NODE_URL)
     }
 
     pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
@@ -270,7 +279,7 @@ impl Falcon512Wallet {
     }
 
     async fn get_rpc(&self) -> RPC {
-        RPC::new(NODE_URL).await.unwrap()
+        RPC::new(self.rpc_url.as_str()).await.unwrap()
     }
 
     fn hash224(input: &[u8]) -> Vec<u8> {

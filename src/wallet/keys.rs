@@ -6,6 +6,8 @@ use sha3::{Digest, Keccak256};
 
 use crate::wallet::types::PublicKey;
 
+pub const NODE_URL: &str = "https://pwrrpc.pwrlabs.io/";
+
 impl PublicKey {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
