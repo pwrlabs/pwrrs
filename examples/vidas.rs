@@ -1,10 +1,10 @@
 use pwr_rs::{
     RPC,
-    transaction::types::VMDataTransaction,
+    transaction::types::VidaDataTransaction,
 };
 use std::sync::Arc;
 
-fn handler(txn: VMDataTransaction) {
+fn handler(txn: VidaDataTransaction) {
     // Get the address of the transaction sender
     let sender = txn.sender;
     // Get the data sent in the transaction (In Hex Format)
@@ -28,7 +28,7 @@ fn handler(txn: VMDataTransaction) {
 
 #[tokio::main]
 async fn main() {
-    let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
+    let rpc = RPC::new("http://46.101.151.203:8085/").await.unwrap();
     let rpc = Arc::new(rpc);
     let vida_id = 1; // Replace with your VIDA's ID
 

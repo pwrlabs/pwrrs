@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
-use crate::transaction::types::VMDataTransaction;
+use crate::transaction::types::VidaDataTransaction;
 
 pub struct RPC {
     pub http_client: Client,
@@ -17,6 +17,7 @@ pub enum RpcError {
     InvalidRpcUrl,
     Network(reqwest::Error),
     Deserialization(reqwest::Error),
+    JsonDeserialization(String),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,4 +48,4 @@ pub struct VidaTransactionSubscription {
     pub running: Arc<AtomicBool>,
 }
 
-pub type ProcessVidaTransactions = fn(transaction: VMDataTransaction);
+pub type ProcessVidaTransactions = fn(transaction: VidaDataTransaction);

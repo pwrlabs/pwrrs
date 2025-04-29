@@ -35,7 +35,7 @@ cargo add pwr-rs
 
 ## 🌐 Documentation
 
-How to [Guides](https://pwrlabs.io) 🔜 & [API](https://pwrlabs.io) 💻
+How to [Guides](https://docs.pwrlabs.io/pwrchain/overview) 🔜 & [API](https://docs.pwrlabs.io/developers/developing-on-pwr-chain/what-is-a-decentralized-application) 💻
 
 Play with [Code Examples](https://github.com/keep-pwr-strong/pwr-examples/) 🎮
 
@@ -97,7 +97,7 @@ async fn main() {
 }
 ```
 
-**Send data to a VM:**
+**Send data to a VIDA:**
 
 ```rust
 use pwr_rs::Wallet;
@@ -108,7 +108,7 @@ async fn main() {
     let data = vec!["Hello World!"];
     let data_as_bytes: Vec<u8> = data.into_iter().flat_map(|s| s.as_bytes().to_vec()).collect();
 
-    let response = wallet.send_vm_data(123, data_as_bytes).await;
+    let response = wallet.send_vida_data(123, data_as_bytes).await;
     if response.success {
         println!("Transaction Hash: {}", response.data.unwrap());
     }

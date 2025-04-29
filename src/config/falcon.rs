@@ -12,29 +12,19 @@ impl Falcon {
         falcon1024::keypair()
     }
 
-    pub fn sign_512(message: &[u8], secret_key: &falcon512::SecretKey) -> falcon512::SignedMessage {
-        falcon512::sign(message, secret_key)
+    pub fn sign_512(message: &[u8], secret_key: &falcon512::SecretKey) -> falcon512::DetachedSignature {
+        falcon512::detached_sign(message, secret_key)
     }
 
-    pub fn sign_1024(message: &[u8], secret_key: &falcon1024::SecretKey) -> falcon1024::SignedMessage {
-        falcon1024::sign(message, secret_key)
+    pub fn sign_1024(message: &[u8], secret_key: &falcon1024::SecretKey) -> falcon1024::DetachedSignature {
+        falcon1024::detached_sign(message, secret_key)
     }
 
-    pub fn verify_512(message: &[u8], signature: &falcon512::SignedMessage, public_key: &falcon512::PublicKey) -> bool {
-        let verifiedmsg = falcon512::open(&signature, &public_key).unwrap();
-        if verifiedmsg == message {
-            true
-        } else {
-            false
-        }
+    pub fn verify_512(message: &[u8], signature: &falcon512::DetachedSignature, public_key: &falcon512::PublicKey) -> bool {
+        falcon512::verify_detached_signature(&signature, message, &public_key).is_ok()
     }
 
-    pub fn verify_1024(message: &[u8], signature: &falcon1024::SignedMessage, public_key: &falcon1024::PublicKey) -> bool {
-        let verifiedmsg = falcon1024::open(&signature, &public_key).unwrap();
-        if verifiedmsg == message {
-            true
-        } else {
-            false
-        }
+    pub fn verify_1024(message: &[u8], signature: &falcon1024::DetachedSignature, public_key: &falcon1024::PublicKey) -> bool {
+        falcon1024::verify_detached_signature(&signature, message, &public_key).is_ok()
     }
 }

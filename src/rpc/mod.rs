@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use crate::{
     block::Block,
-    transaction::types::{VMDataTransaction, Penalty},
+    transaction::types::{VidaDataTransaction, Penalty},
     validator::Validator
 };
 
@@ -43,7 +43,7 @@ impl RPC {
 
             let response = s
                 .http_client
-                .get(s.node_url.join("/chainId/").unwrap())
+                .get(s.node_url.join("/chainId").unwrap())
                 .send()
                 .await
                 .map_err(RpcError::Network)?;
@@ -72,7 +72,7 @@ impl RPC {
             fee_per_byte: u64,
         }
         let resp = self
-            .call_rpc_get("/feePerByte/")
+            .call_rpc_get("/feePerByte")
             .await
             .map(|r: Response| r.fee_per_byte)?;
 
@@ -88,7 +88,7 @@ impl RPC {
             nonce: u32,
         }
 
-        self.call_rpc_get(&format!("/nonceOfUser/?userAddress={}", address))
+        self.call_rpc_get(&format!("/nonceOfUser?userAddress={}", address))
             .await
             .map(|r: Response| r.nonce)
     }
@@ -100,7 +100,7 @@ impl RPC {
             balance: u64,
         }
 
-        self.call_rpc_get(&format!("/balanceOf/?userAddress={}", address))
+        self.call_rpc_get(&format!("/balanceOf?userAddress={}", address))
             .await
             .map(|r: Response| r.balance)
     }
@@ -113,7 +113,7 @@ impl RPC {
             blocks_count: u64,
         }
 
-        self.call_rpc_get("/blocksCount/")
+        self.call_rpc_get("/blocksCount")
             .await
             .map(|r: Response| r.blocks_count)
     }
@@ -125,7 +125,7 @@ impl RPC {
             blockchain_version: u64,
         }
 
-        self.call_rpc_get("/blockchainVersion/")
+        self.call_rpc_get("/blockchainVersion")
             .await
             .map(|r: Response| r.blockchain_version)
     }
@@ -141,7 +141,7 @@ impl RPC {
             ecdsa_verification_fee: u64,
         }
 
-        self.call_rpc_get("/ecdsaVerificationFee/")
+        self.call_rpc_get("/ecdsaVerificationFee")
             .await
             .map(|r: Response| r.ecdsa_verification_fee)
     }
@@ -153,7 +153,7 @@ impl RPC {
             burn_percentage: u64,
         }
 
-        self.call_rpc_get("/burnPercentage/")
+        self.call_rpc_get("/burnPercentage")
             .await
             .map(|r: Response| r.burn_percentage)
     }
@@ -165,7 +165,7 @@ impl RPC {
             total_voting_power: u64,
         }
 
-        self.call_rpc_get("/totalVotingPower/")
+        self.call_rpc_get("/totalVotingPower")
             .await
             .map(|r: Response| r.total_voting_power)
     }
@@ -177,7 +177,7 @@ impl RPC {
             pwr_rewards_per_year: u64,
         }
 
-        self.call_rpc_get("/pwrRewardsPerYear/")
+        self.call_rpc_get("/pwrRewardsPerYear")
             .await
             .map(|r: Response| r.pwr_rewards_per_year)
     }
@@ -189,7 +189,7 @@ impl RPC {
             withdrawal_lock_time: u64,
         }
 
-        self.call_rpc_get("/withdrawalLockTime/")
+        self.call_rpc_get("/withdrawalLockTime")
             .await
             .map(|r: Response| r.withdrawal_lock_time)
     }
@@ -201,7 +201,7 @@ impl RPC {
             all_early_withdraw_penalties: HashMap<String, Penalty>,
         }
 
-        self.call_rpc_get("/allEarlyWithdrawPenalties/")
+        self.call_rpc_get("/allEarlyWithdrawPenalties")
             .await
             .map(|r: Response| r.all_early_withdraw_penalties)
     }
@@ -213,7 +213,7 @@ impl RPC {
             max_block_size: u64,
         }
 
-        self.call_rpc_get("/maxBlockSize/")
+        self.call_rpc_get("/maxBlockSize")
             .await
             .map(|r: Response| r.max_block_size)
     }
@@ -225,7 +225,7 @@ impl RPC {
             max_transaction_size: u64,
         }
 
-        self.call_rpc_get("/maxTransactionSize/")
+        self.call_rpc_get("/maxTransactionSize")
             .await
             .map(|r: Response| r.max_transaction_size)
     }
@@ -237,7 +237,7 @@ impl RPC {
             block_number: u64,
         }
 
-        self.call_rpc_get("/blockNumber/")
+        self.call_rpc_get("/blockNumber")
             .await
             .map(|r: Response| r.block_number)
     }
@@ -249,7 +249,7 @@ impl RPC {
             block_timestamp: u64,
         }
 
-        self.call_rpc_get("/blockTimestamp/")
+        self.call_rpc_get("/blockTimestamp")
             .await
             .map(|r: Response| r.block_timestamp)
     }
@@ -265,7 +265,7 @@ impl RPC {
             proposal_fee: u64,
         }
 
-        self.call_rpc_get("/proposalFee/")
+        self.call_rpc_get("/proposalFee")
             .await
             .map(|r: Response| r.proposal_fee)
     }
@@ -277,7 +277,7 @@ impl RPC {
             proposal_validity_time: u64,
         }
 
-        self.call_rpc_get("/proposalValidityTime/")
+        self.call_rpc_get("/proposalValidityTime")
             .await
             .map(|r: Response| r.proposal_validity_time)
     }
@@ -289,7 +289,7 @@ impl RPC {
             validator_count_limit: u64,
         }
 
-        self.call_rpc_get("/validatorCountLimit/")
+        self.call_rpc_get("/validatorCountLimit")
             .await
             .map(|r: Response| r.validator_count_limit)
     }
@@ -301,7 +301,7 @@ impl RPC {
             validator_slashing_fee: u64,
         }
 
-        self.call_rpc_get("/validatorSlashingFee/")
+        self.call_rpc_get("/validatorSlashingFee")
             .await
             .map(|r: Response| r.validator_slashing_fee)
     }
@@ -313,7 +313,7 @@ impl RPC {
             validator_operational_fee: u64,
         }
 
-        self.call_rpc_get("/validatorOperationalFee/")
+        self.call_rpc_get("/validatorOperationalFee")
             .await
             .map(|r: Response| r.validator_operational_fee)
     }
@@ -325,7 +325,7 @@ impl RPC {
             validator_joining_fee: u64,
         }
 
-        self.call_rpc_get("/validatorJoiningFee/")
+        self.call_rpc_get("/validatorJoiningFee")
             .await
             .map(|r: Response| r.validator_joining_fee)
     }
@@ -337,7 +337,7 @@ impl RPC {
             minimum_delegating_amount: u64,
         }
 
-        self.call_rpc_get("/minimumDelegatingAmount/")
+        self.call_rpc_get("/minimumDelegatingAmount")
             .await
             .map(|r: Response| r.minimum_delegating_amount)
     }
@@ -349,7 +349,7 @@ impl RPC {
             total_delegators_count: u64,
         }
 
-        self.call_rpc_get("/totalDelegatorsCount/")
+        self.call_rpc_get("/totalDelegatorsCount")
             .await
             .map(|r: Response| r.total_delegators_count)
     }
@@ -363,7 +363,7 @@ impl RPC {
             validator: Validator,
         }
         self.call_rpc_get(&format!(
-            "/validator/?validatorAddress={}",
+            "/validator?validatorAddress={}",
             validator_address
         ))
         .await
@@ -381,7 +381,7 @@ impl RPC {
             delegators: u64,
         }
         self.call_rpc_get(&format!(
-            "/validator/delegator/delegatedPWROfAddress/?userAddress={}&validatorAddress={}",
+            "/validator/delegator/delegatedPWROfAddress?userAddress={}&validatorAddress={}",
             delegator_address, validator_address
         ))
         .await
@@ -399,7 +399,7 @@ impl RPC {
             shares_of_delegator: u64,
         }
         self.call_rpc_get(&format!(
-            "/validator/delegator/sharesOfAddress/?userAddress={}&validatorAddress={}",
+            "/validator/delegator/sharesOfAddress?userAddress={}&validatorAddress={}",
             delegator_address, validator_address
         ))
         .await
@@ -416,98 +416,111 @@ impl RPC {
             share_value: f64,
         }
         self.call_rpc_get(&format!(
-            "/validator/shareValue/?validatorAddress={}",
+            "/validator/shareValue?validatorAddress={}",
             validator_address
         ))
         .await
         .map(|r: Response| r.share_value)
     }
 
-    pub async fn get_vm_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
+    pub async fn get_vida_owner_transaction_fee_share(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            #[serde(rename = "vmOwnerTransactionFeeShare")]
-            vm_owner_transaction_fee_share: u64,
+            #[serde(rename = "vidaOwnerTransactionFeeShare")]
+            vida_owner_transaction_fee_share: u64,
         }
 
-        self.call_rpc_get("/vmOwnerTransactionFeeShare/")
+        self.call_rpc_get("/vidaOwnerTransactionFeeShare")
             .await
-            .map(|r: Response| r.vm_owner_transaction_fee_share)
+            .map(|r: Response| r.vida_owner_transaction_fee_share)
     }
 
-    pub async fn get_vm_id_claiming_fee(&self) -> Result<u64, RpcError> {
+    pub async fn get_vida_id_claiming_fee(&self) -> Result<u64, RpcError> {
         #[derive(Deserialize)]
         struct Response {
-            #[serde(rename = "vmIdClaimingFee")]
-            vm_id_claiming_fee: u64,
+            #[serde(rename = "vidaIdClaimingFee")]
+            vida_id_claiming_fee: u64,
         }
 
-        self.call_rpc_get("/vmIdClaimingFee/")
+        self.call_rpc_get("/vidaIdClaimingFee")
             .await
-            .map(|r: Response| r.vm_id_claiming_fee)
+            .map(|r: Response| r.vida_id_claiming_fee)
     }
 
-    pub async fn get_vm_data_transactions(
+    pub async fn get_vida_data_transactions(
         &self,
         starting_block: u64,
         ending_block: u64,
-        vm_id: u64,
-    ) -> Result<Vec<VMDataTransaction>, RpcError> {
+        vida_id: u64,
+    ) -> Result<Vec<VidaDataTransaction>, RpcError> {
+        let url = format!("/getVidaTransactions?startingBlock={}&endingBlock={}&vidaId={}", 
+            starting_block, ending_block, vida_id);
+        
+        let response_text = self.http_client
+            .get(self.node_url.join(&url).unwrap())
+            .send()
+            .await
+            .map_err(RpcError::Network)?
+            .text()
+            .await
+            .map_err(RpcError::Network)?;
+
         #[derive(Deserialize)]
-        struct Response {
-            transactions: Vec<VMDataTransaction>,
-        }
-        self.call_rpc_get(&format!(
-            "/getVmTransactions/?startingBlock={}&endingBlock={}&vmId={}",
-            starting_block, ending_block, vm_id
-        ))
-        .await
-        .map(|r: Response| r.transactions)
+        struct Response { transactions: Vec<String> }
+        
+        let response: Response = serde_json::from_str(&response_text)
+            .map_err(|e| RpcError::JsonDeserialization(e.to_string()))?;
+
+        response.transactions
+            .into_iter()
+            .map(|tx_str| serde_json::from_str(&tx_str)
+                .map_err(|e| RpcError::JsonDeserialization(e.to_string())))
+            .collect()
     }
 
-    pub fn get_vm_id_address(&self, vm_id: i64) -> String {
-        let mut hex_address = if vm_id >= 0 { String::from("1") } else { String::from("0") };
+    pub fn get_vida_id_address(&self, vida_id: i64) -> String {
+        let mut hex_address = if vida_id >= 0 { String::from("1") } else { String::from("0") };
     
-        let vm_id = if vm_id < 0 { -vm_id } else { vm_id };
-        let vm_id_string = vm_id.to_string();
+        let vida_id = if vida_id < 0 { -vida_id } else { vida_id };
+        let vida_id_string = vida_id.to_string();
     
-        for _ in 0..(39 - vm_id_string.len()) {
+        for _ in 0..(39 - vida_id_string.len()) {
             hex_address.push('0');
         }
     
-        hex_address.push_str(&vm_id_string);
+        hex_address.push_str(&vida_id_string);
     
         format!("0x{}", hex_address)
     }
 
-    pub async fn get_owner_of_vm_id(
+    pub async fn get_owner_of_vida_id(
         &self,
-        vm_id: i64,
+        vida_id: i64,
     ) -> Result<String, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             #[serde(rename = "owner")]
-            owner_of_vm_id: String,
+            owner_of_vida_id: String,
         }
         self.call_rpc_get(&format!(
-            "/ownerOfVmId/?vmId={}",
-            vm_id
+            "/ownerOfVidaId?vidaId={}",
+            vida_id
         ))
         .await
-        .map(|r: Response| r.owner_of_vm_id)
+        .map(|r: Response| r.owner_of_vida_id)
     }
 
-    pub async fn get_conduits_of_vm(
+    pub async fn get_conduits_of_vida(
         &self,
-        vm_id: i64,
+        vida_id: i64,
     ) -> Result<Vec<Validator>, RpcError> {
         #[derive(Deserialize)]
         struct Response {
             conduits: Vec<Validator>,
         }
         self.call_rpc_get(&format!(
-            "/conduitsOfVm/?vmId={}",
-            vm_id
+            "/conduitsOfVida?vidaId={}",
+            vida_id
         ))
         .await
         .map(|r: Response| r.conduits)
@@ -521,11 +534,9 @@ impl RPC {
             #[serde(rename = "maxGuardianTime")]
             max_guardian_time: u64,
         }
-        self.call_rpc_get(&format!(
-            "/maxGuardianTime/"
-        ))
-        .await
-        .map(|r: Response| r.max_guardian_time)
+        self.call_rpc_get("/maxGuardianTime")
+            .await
+            .map(|r: Response| r.max_guardian_time)
     }
     
     pub async fn get_guardian_of_address(
@@ -540,7 +551,7 @@ impl RPC {
         }
 
         let res: Response = self.call_rpc_get(&format!(
-                "/guardianOf/?userAddress={}",
+                "/guardianOf?userAddress={}",
                 address
             ))
             .await?;
@@ -563,7 +574,7 @@ impl RPC {
     ///
     /// This method utilizes the `block_count` method to get the total count of blocks
     /// and then subtracts one to get the latest block number
-    pub async fn get_latest_block_count(&self) -> Result<u64, RpcError> {
+    pub async fn get_latest_block(&self) -> Result<u64, RpcError> {
         self.get_block_count().await.map(|v| v - 1)
     }
 
@@ -573,7 +584,7 @@ impl RPC {
         struct Response {
             block: Block,
         }
-        self.call_rpc_get(&format!("/block/?blockNumber={}", block_number))
+        self.call_rpc_get(&format!("/block?blockNumber={}", block_number))
             .await
             .map(|r: Response| r.block)
     }
@@ -584,7 +595,7 @@ impl RPC {
         struct Response {
             active_voting_power: u64,
         }
-        self.call_rpc_get("/activeVotingPower/")
+        self.call_rpc_get("/activeVotingPower")
             .await
             .map(|r: Response| r.active_voting_power)
     }
@@ -596,7 +607,7 @@ impl RPC {
         struct Response {
             validators_count: u64,
         }
-        self.call_rpc_get("/totalValidatorsCount/")
+        self.call_rpc_get("/totalValidatorsCount")
             .await
             .map(|r: Response| r.validators_count)
     }
@@ -608,7 +619,7 @@ impl RPC {
         struct Response {
             validators_count: u64,
         }
-        self.call_rpc_get("/standbyValidatorsCount/")
+        self.call_rpc_get("/standbyValidatorsCount")
             .await
             .map(|r: Response| r.validators_count)
     }
@@ -620,7 +631,7 @@ impl RPC {
         struct Response {
             validators_count: u64,
         }
-        self.call_rpc_get("/activeValidatorsCount/")
+        self.call_rpc_get("/activeValidatorsCount")
             .await
             .map(|r: Response| r.validators_count)
     }
@@ -631,7 +642,7 @@ impl RPC {
         struct Response {
             validators: Vec<Validator>,
         }
-        self.call_rpc_get("/allValidators/")
+        self.call_rpc_get("/allValidators")
             .await
             .map(|r: Response| r.validators)
     }
@@ -642,7 +653,7 @@ impl RPC {
         struct Response {
             validators: Vec<Validator>,
         }
-        self.call_rpc_get("/standbyValidators/")
+        self.call_rpc_get("/standbyValidators")
             .await
             .map(|r: Response| r.validators)
     }
@@ -653,7 +664,7 @@ impl RPC {
         struct Response {
             validators: Vec<Validator>,
         }
-        self.call_rpc_get("/activeValidators/")
+        self.call_rpc_get("/activeValidators")
             .await
             .map(|r: Response| r.validators)
     }
@@ -668,7 +679,7 @@ impl RPC {
             delegators: HashMap<String, u64>,
         }
         self.call_rpc_get(&format!(
-            "/validator/delegatorsOfValidator/?validatorAddress={}",
+            "/validator/delegatorsOfValidator?validatorAddress={}",
             validator_address
         ))
         .await
@@ -688,7 +699,7 @@ impl RPC {
             txn: hex::encode(txn_bytes),
         };
 
-        let (status, resp_data) = match self.call_rpc_post::<ResponseData, _>("/broadcast/", request).await {
+        let (status, resp_data) = match self.call_rpc_post::<ResponseData, _>("/broadcast", request).await {
             Ok(result) => result,
             Err(e) => {
                 return BroadcastResponse {
@@ -752,14 +763,14 @@ impl RPC {
 
     pub fn subscribe_to_vida_transactions_with_poll_interval(
         self: Arc<Self>,
-        vm_id: u64, 
+        vida_id: u64, 
         starting_block: u64,
         handler: ProcessVidaTransactions,
         _poll_interval: Option<u64>,
     ) -> VidaTransactionSubscription {
         let mut subscription = VidaTransactionSubscription::new(
             self,
-            vm_id,
+            vida_id,
             starting_block,
             handler,
             _poll_interval.unwrap_or(100),
@@ -770,12 +781,12 @@ impl RPC {
 
     pub fn subscribe_to_vida_transactions(
         self: Arc<Self>,
-        vm_id: u64, 
+        vida_id: u64, 
         starting_block: u64,
         handler: ProcessVidaTransactions,
     ) -> VidaTransactionSubscription {
         self.subscribe_to_vida_transactions_with_poll_interval(
-            vm_id,
+            vida_id,
             starting_block,
             handler,
             None
