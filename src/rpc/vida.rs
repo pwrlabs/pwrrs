@@ -67,7 +67,7 @@ impl VidaTransactionSubscription {
                         }
 
                         if effective_latest_block >= current_block {
-                            let transactions = pwrrs.get_vm_data_transactions(
+                            let transactions = pwrrs.get_vida_data_transactions(
                                 current_block, effective_latest_block, vida_id
                             ).await.unwrap();
 

@@ -212,6 +212,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crunchy"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
+
+[[package]]
 name = "crypto-bigint"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1104,7 +1110,7 @@ dependencies = [
 
 [[package]]
 name = "pwr-rs"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "aes",
  "borsh",
@@ -1121,6 +1127,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "sha3",
+ "tiny-keccak",
  "tokio",
  "url",
 ]
@@ -1564,6 +1571,15 @@ dependencies = [
  "once_cell",
  "rustix",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "tiny-keccak"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
+dependencies = [
+ "crunchy",
 ]
 
 [[package]]

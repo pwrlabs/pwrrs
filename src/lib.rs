@@ -2,15 +2,15 @@
 //!
 //! # Create wallet
 //! ```ignore
-//! # use pwr_rs::Wallet;
-//! let wallet = Wallet::random();
+//! use pwr_rs::Wallet;
+//! let wallet = Wallet::new();
 //! ```
 //!
 //! # Create RPC
 //! ```ignore
-//! # use pwr_rs::Wallet;
-//! # use pwr_rs::rpc::types::RPC;
-//! # let wallet = Wallet::random();
+//! use pwr_rs::Wallet;
+//! use pwr_rs::RPC;
+//! let wallet = Wallet::new();
 //! let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").unwrap();
 //! let balance = rpc.balance_of_address(&wallet.get_address()).await.unwrap();
 //! ```
@@ -25,5 +25,5 @@ pub mod wallet;
 
 mod config;
 
-pub use wallet::types::{PublicKey, Wallet, Falcon512Wallet};
+pub use wallet::types::{PublicKey, Wallet};
 pub use rpc::RPC;

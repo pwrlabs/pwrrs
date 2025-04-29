@@ -1,15 +1,14 @@
 use pwr_rs::{
-    Wallet, RPC
+    Wallet,
+    RPC
 };
 
 #[tokio::main]
 async fn main() {
-    let private_key = "0x04828e90065864c111871769c601d7de2246570b39dd37c19ccac16c14b18f72";
-    Wallet::from_hex(&private_key).unwrap()
-        .store_wallet("my_wallet.dat", "1234")
-        .expect("Failed to store wallet");
+    // let wallet = Wallet::new();
+    // wallet.store_wallet("example_wallet.dat").unwrap();
 
-    let wallet = Wallet::load_wallet("my_wallet.dat", "1234").expect("Failed to load wallet");
+    let wallet = Wallet::load_wallet("example_wallet.dat").expect("Failed to load wallet");
 
     let address = wallet.get_address();
     println!("Address: {address}");
@@ -24,29 +23,32 @@ async fn main() {
     {
         let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 
-        let blocks_count = rpc.get_block_count().await.unwrap();
-        println!("BlocksCount: {blocks_count}");
+        let fee_per_byte = rpc.get_fee_per_byte().await.unwrap();
+        println!("FeePerByte: {fee_per_byte}");
 
-        let latest_block_count = rpc.get_latest_block_count().await.unwrap();
-        println!("LatestBlockCount: {latest_block_count}");
+        let latest_block = rpc.get_latest_block().await.unwrap();
+        println!("LatestBlock: {latest_block}");
 
-        let start_block = 65208;
-        let end_block = 65210;
-        let vm_id = 1234;
-        let transactions = rpc.get_vm_data_transactions(start_block, end_block, vm_id).await.unwrap();
-        println!("VMData: {:?}", transactions);
+        let start_block = 1176;
+        let end_block = 1179;
+        let vida_id = 1234;
+        let transactions = rpc.get_vida_data_transactions(start_block, end_block, vida_id).await.unwrap();
+        println!("VidaData: {:?}", hex::encode(&transactions[0].data));
 
         let guardian = rpc.get_guardian_of_address("0xD97C25C0842704588DD70A061C09A522699E2B9C").await.unwrap();
         println!("Guardian: {guardian}");
+
+        let latest_block = rpc.get_block_number().await.unwrap();
+        println!("LatestBlock: {latest_block}");
         
-        let block = rpc.get_block_by_number(65220).await.unwrap();
+        let block = rpc.get_block_by_number(10).await.unwrap();
         println!("{:?}", block);
 
         let active_voting_power = rpc.get_active_voting_power().await.unwrap();
         println!("ActiveVotingPower: {active_voting_power}");
 
-        let conduits_vm = rpc.get_conduits_of_vm(69).await.unwrap();
-        println!("ConduitsVM: {:?}", conduits_vm);
+        let conduits_vida = rpc.get_conduits_of_vida(69).await.unwrap();
+        println!("ConduitsVida: {:?}", conduits_vida);
 
         let total_validators_count = rpc.get_validators_count().await.unwrap();
         println!("TotalValidatorsCount: {total_validators_count}");
@@ -67,23 +69,19 @@ async fn main() {
         println!("ActiveValidators: {active_validators:?}");
 
         let tx_hash = wallet.transfer_pwr(
-            "0x3B3B69093879E7B6F28366FA3C32762590FF547E".into(),
-            1000,
+            "0x3B3B69093879E7B6F28366FA3C32762590FF547E".to_string(),
+            10,
+            fee_per_byte,
         ).await;
         println!("Transfer tx hash: {}", tx_hash.data.unwrap());
 
-        let data = vec!["Hello World!"];
-        let data_as_bytes: Vec<u8> = data.into_iter()
+        let data: Vec<u8> = vec!["Hello World!"].into_iter()
             .flat_map(|s| s.as_bytes().to_vec())
             .collect();
-        let tx_hash = wallet.send_vm_data(1234, data_as_bytes).await;
-        println!("Send VM Data tx hash: {}", tx_hash.data.unwrap());
+        let tx_hash = wallet.send_vida_data(1234, data.clone(), fee_per_byte).await;
+        println!("Send Vida Data tx hash: {}", tx_hash.data.unwrap());
 
-        let data = vec!["Hello World!"];
-        let data_as_bytes: Vec<u8> = data.into_iter()
-            .flat_map(|s| s.as_bytes().to_vec())
-            .collect();
-        let tx_hash = wallet.send_payable_vm_data(1234, 1000, data_as_bytes).await;
-        println!("Send Payable VM Data tx hash: {}", tx_hash.data.unwrap());
+        let tx_hash = wallet.send_payable_vida_data(1234, data, 1000, fee_per_byte).await;
+        println!("Send Payable Vida Data tx hash: {}", tx_hash.data.unwrap());
     }
 }
