@@ -10,6 +10,7 @@ use hex;
 use sha3::{Digest, Keccak224};
 use crate::wallet::types::Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
+<<<<<<< HEAD
 use crate::wallet::keys::NODE_URL;
 
 impl Wallet {
@@ -24,12 +25,45 @@ impl Wallet {
             public_key: public_key.as_bytes().to_vec(),
             private_key: secret_key.as_bytes().to_vec(),
             address: address,
+=======
+use crate::config::aes256::AES256;
+use crate::wallet::keys::NODE_URL;
+
+impl Wallet {
+    #[cfg(feature = "rand")]
+    pub fn random_with_rpc_url(rpc_url: &str) -> Self {
+        let signing_key = SigningKey::random(&mut OsRng);
+
+        Self {
+            private_key: signing_key,
+>>>>>>> upstream/main
             rpc_url: rpc_url.to_string(),
         }
     }
 
+<<<<<<< HEAD
     pub fn new() -> Self {
         Self::new_with_rpc_url(NODE_URL)
+=======
+    #[cfg(feature = "rand")]
+    pub fn random() -> Self {
+        Self::random_with_rpc_url(NODE_URL)
+    }
+
+    pub fn from_hex_with_rpc_url(hex_str: &str, rpc_url: &str) -> Result<Self, Error> {
+        let bytes = if hex_str.len() > 2 && (&hex_str[..2] == "0x" || &hex_str[..2] == "0X") {
+            hex::decode(&hex_str[2..]).map_err(|_| Error::new())?
+        } else {
+            hex::decode(hex_str).map_err(|_| Error::new())?
+        };
+        let private_key = SigningKey::from_slice(&bytes)?;
+
+        Ok(Self { private_key, rpc_url: rpc_url.to_string() })
+    }
+
+    pub fn from_hex(hex_str: &str) -> Result<Self, Error> {
+        Self::from_hex_with_rpc_url(hex_str, NODE_URL)
+>>>>>>> upstream/main
     }
 
     pub fn from_keys_with_rpc_url(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey, rpc_url: &str) -> Self {
@@ -75,6 +109,7 @@ impl Wallet {
         Ok(())
     }
 
+<<<<<<< HEAD
     pub fn load_wallet_with_rpc_url<P: AsRef<Path>>(file_path: P, rpc_url: &str) -> Result<Self, Box<dyn Error>> {
         let data = fs::read(file_path)?;
         if data.len() < 8 { // At minimum we need two 4-byte length fields
@@ -132,6 +167,17 @@ impl Wallet {
 
     pub fn load_wallet<P: AsRef<Path>>(file_path: P) -> Result<Self, Box<dyn Error>> {
         Self::load_wallet_with_rpc_url(file_path, NODE_URL)
+=======
+    pub fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
+        let encrypted_data = std::fs::read(path).ok()?;
+        let private_key_bytes = AES256::decrypt(&encrypted_data, password).ok()?;
+        let private_key = SigningKey::from_slice(&private_key_bytes).ok()?;
+        Some(Self { private_key, rpc_url: rpc_url.to_string() })
+    }
+
+    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        Self::load_wallet_with_rpc_url(path, password, NODE_URL)
+>>>>>>> upstream/main
     }
 
     pub fn get_address(&self) -> String {
@@ -453,6 +499,7 @@ impl Wallet {
         return response;
     }
 
+<<<<<<< HEAD
     // Falcon Guardian Transactions
     pub async fn guardian_approval(&self, transactions: Vec<Transaction>, fee_per_byte: u64) -> BroadcastResponse {
         let response = self.make_sure_public_key_is_set(fee_per_byte).await;
@@ -780,5 +827,104 @@ impl Wallet {
         let mut hasher = Keccak224::new();
         hasher.update(input);
         hasher.finalize().to_vec()
+=======
+    async fn get_rpc(&self) -> RPC {
+        RPC::new(self.rpc_url.as_str()).await.unwrap()
+    }
+}
+
+impl Hash for Wallet {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let bytes = self.private_key.to_bytes();
+        state.write(&bytes)
+    }
+}
+
+impl TryFrom<String> for Wallet {
+    type Error = Error;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::from_hex(&value)
+    }
+}
+
+impl From<Wallet> for String {
+    fn from(value: Wallet) -> Self {
+        value.to_hex()
+    }
+}
+
+impl Display for Wallet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.to_hex())
+    }
+}
+
+#[cfg(feature = "borsh")]
+impl borsh::BorshSerialize for super::Wallet {
+    fn serialize<W: std::io::prelude::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        write!(writer, "{}", self.to_hex())
+    }
+}
+
+#[cfg(feature = "borsh")]
+impl borsh::BorshDeserialize for super::Wallet {
+    fn deserialize_reader<R: std::io::prelude::Read>(reader: &mut R) -> std::io::Result<Self> {
+        let s = String::deserialize_reader(reader)?;
+        Self::from_hex(&s)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e.to_string()))
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PRIVATE_KEY_HEX: &str =
+        "0x9D4428C6E0638331B4866B70C831F8BA51C11B031F4B55EED4087BBB8EF0151F";
+
+    #[test]
+    fn wallet_can_be_created_from_hex_string() {
+        Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+    }
+
+    #[test]
+    fn wallet_can_be_encoded_to_hex_string() {
+        let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+        let encoded_wallet = wallet.to_hex();
+        assert_eq!(format!("0x{}", encoded_wallet), PRIVATE_KEY_HEX);
+    }
+
+    #[test]
+    fn can_get_public_key_from_wallet() {
+        let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+        let public_key = wallet.get_public_key();
+        assert_eq!(public_key, PublicKey::from_hex("040cd999a20b0eba1cf86362c738929671902c9b337ab1370d2ba790be68b01227cab9fa9096b87651686bf898acf11857906907ba7fca4f5f5d9513bdd16e0a52").unwrap());
+    }
+
+    #[test]
+    fn can_get_address_from_public_key() {
+        let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+        let address = wallet.get_address();
+        assert_eq!(address, "0xA4710E3D79E1ED973AF58E0F269E9B21DD11BC64");
+    }
+
+    #[test]
+    fn can_sign_message() {
+        let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+        let sign = wallet.sign(b"Hello World").unwrap();
+        assert_eq!(
+            hex::encode_upper(&sign),
+            "4BFE08E9CDD47B064A812011E8DEC867D35833C072047958729BD5FE950F62B53E47C450BA8FED1D190D6ABB60B20ADC32237C5C072C0E1AA56CDBA023062D621B"
+        );
+    }
+
+    #[test]
+    fn can_verify_signed_message() {
+        let wallet = Wallet::from_hex(PRIVATE_KEY_HEX).unwrap();
+        let sign = wallet.sign(b"Hello World").unwrap();
+        wallet.verify_sign(b"Hello World", &sign).unwrap();
+>>>>>>> upstream/main
     }
 }
