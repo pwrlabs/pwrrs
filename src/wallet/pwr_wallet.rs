@@ -1,6 +1,7 @@
 use crate::config::falcon::Falcon;
 use crate::transaction::{NewTransactionData, types::Transaction};
-use pqcrypto_falcon::falcon512;
+use pqcrypto_falcon::{falcon512 as falcon512_pqcrypto};
+use falcon_rust::{falcon512 as falcon512_rust};
 use pqcrypto_traits::sign::*;
 use std::fs;
 use std::io::Read;
@@ -11,53 +12,88 @@ use sha3::{Digest, Keccak224};
 use crate::wallet::types::Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
 use crate::wallet::keys::NODE_URL;
+use bip39::{Mnemonic, MnemonicType, Language};
+use rand::thread_rng;
+use rand::Rng;
+use hmac::Hmac;
+use pbkdf2::pbkdf2;
+use sha2::Sha512;
 
 impl Wallet {
     pub fn new_with_rpc_url(rpc_url: &str) -> Self {
-        let (public_key, secret_key) = Falcon::generate_keypair_512();
+        let mut entropy = [0u8; 32];
+        thread_rng().fill(&mut entropy);
         
-        // Get the hash of the public key
-        let hash = Self::hash224(public_key.as_bytes());
+        let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
+        let phrase: &str = mnemonic.phrase();
+        let seed = Self::generate_seed(phrase);
+        let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
+        
+        let hash = Self::hash224(&public_key.to_bytes().to_vec());
         let address = hash[0..20].to_vec();
 
         Self {
-            public_key: public_key.as_bytes().to_vec(),
-            private_key: secret_key.as_bytes().to_vec(),
+            public_key: public_key.to_bytes().to_vec(),
+            private_key: secret_key.to_bytes().to_vec(),
             address: address,
             rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn new() -> Self {
+    pub fn new_with_rpc_url_and_phrase(seed_phrase: &str, rpc_url: &str) -> Self {
+        let seed = Self::generate_seed(seed_phrase);
+        let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
+
+        let hash = Self::hash224(&public_key.to_bytes().to_vec());
+        let address = hash[0..20].to_vec();
+
+        Self {
+            public_key: public_key.to_bytes().to_vec(),
+            private_key: secret_key.to_bytes().to_vec(),
+            address: address,
+            rpc_url: rpc_url.to_string(),
+        }
+    }
+
+    pub fn new_random() -> Self {
         Self::new_with_rpc_url(NODE_URL)
     }
 
-    pub fn from_keys_with_rpc_url(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey, rpc_url: &str) -> Self {
+    pub fn new(seed_phrase: &str) -> Self {
+        Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL)
+    }
+
+    pub fn from_keys_with_rpc_url(public_key: &str, secret_key: &str, rpc_url: &str) -> Self {
+        let public_key_bytes = hex::decode(public_key).unwrap();
+        let secret_key_bytes = hex::decode(secret_key).unwrap();
+
+        let public_key = falcon512_rust::PublicKey::from_bytes(&public_key_bytes).unwrap();
+        let secret_key = falcon512_rust::SecretKey::from_bytes(&secret_key_bytes).unwrap();
+
         // Get the hash of the public key
-        let public_key_bytes = public_key.as_bytes();
-        let hash = Self::hash224(public_key_bytes);
+        let hash = Self::hash224(&public_key.to_bytes().to_vec());
         let address = hash[0..20].to_vec();
 
         Self {
-            public_key: public_key.as_bytes().to_vec(),
-            private_key: secret_key.as_bytes().to_vec(),
+            public_key: public_key.to_bytes().to_vec(),
+            private_key: secret_key.to_bytes().to_vec(),
             address: address,
             rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn from_keys(public_key: falcon512::PublicKey, secret_key: falcon512::SecretKey) -> Self {
+    pub fn from_keys(public_key: &str, secret_key: &str) -> Self {
         Self::from_keys_with_rpc_url(public_key, secret_key, NODE_URL)
     }
 
     pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
-        let private_key = falcon512::SecretKey::from_bytes(&self.private_key).unwrap();
+        let private_key = falcon512_pqcrypto::SecretKey::from_bytes(&self.private_key).unwrap();
         Falcon::sign_512(&message, &private_key).as_bytes().to_vec()
     }
 
     pub fn verify_sign(&self, message: Vec<u8>, signature: Vec<u8>) -> bool {
-        let public_key = falcon512::PublicKey::from_bytes(&self.public_key).unwrap();
-        let signature = falcon512::DetachedSignature::from_bytes(&signature).unwrap();
+        let public_key = falcon512_pqcrypto::PublicKey::from_bytes(&self.public_key).unwrap();
+        let signature = falcon512_pqcrypto::DetachedSignature::from_bytes(&signature).unwrap();
         Falcon::verify_512(&message, &signature, &public_key)
     }
 
@@ -117,17 +153,10 @@ impl Wallet {
         let mut secret_key_bytes = vec![0u8; sec_length];
         cursor.read_exact(&mut secret_key_bytes)?;
         
-        let public_key = match falcon512::PublicKey::from_bytes(&public_key_bytes) {
-            Ok(key) => key,
-            Err(e) => return Err(format!("Failed to parse public key: {}", e).into()),
-        };
+        let public_key = hex::encode(public_key_bytes);
+        let secret_key = hex::encode(secret_key_bytes);
         
-        let secret_key = match falcon512::SecretKey::from_bytes(&secret_key_bytes) {
-            Ok(key) => key,
-            Err(e) => return Err(format!("Failed to parse secret key: {}", e).into()),
-        };
-        
-        Ok(Self::from_keys_with_rpc_url(public_key, secret_key, rpc_url))
+        Ok(Self::from_keys_with_rpc_url(&public_key, &secret_key, rpc_url))
     }
 
     pub fn load_wallet<P: AsRef<Path>>(file_path: P) -> Result<Self, Box<dyn Error>> {
@@ -780,5 +809,17 @@ impl Wallet {
         let mut hasher = Keccak224::new();
         hasher.update(input);
         hasher.finalize().to_vec()
+    }
+
+    fn generate_seed(phrase: &str) -> Vec<u8> {
+        let salt = format!("mnemonic");
+        let mut seed = vec![0u8; 64];
+        pbkdf2::<Hmac<Sha512>>(
+            phrase.as_bytes(),
+            salt.as_bytes(),
+            2048,
+            &mut seed
+        ).unwrap();
+        seed
     }
 }
