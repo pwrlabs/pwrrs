@@ -59,8 +59,8 @@ let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 **Generate a new wallet:**
 
 ```rust
-let private_key = "0xac0974bec...f80";
-let wallet = Wallet::from_hex(&private_key).unwrap();
+let seed_phrase = "your seed phrase here";
+let wallet = Wallet::new(seed_phrase);
 ```
 
 **Get wallet address:**
@@ -87,8 +87,8 @@ If the transaction was a success, you can retrieive the transaction hash, if it 
 ```rust
 use pwr_rs::Wallet;
 async fn main() {
-    let private_key = "0xac0974bec...f80";
-    let wallet = Wallet::from_hex(&private_key).unwrap();
+    let seed_phrase = "your seed phrase here";
+    let wallet = Wallet::new(seed_phrase);
 
     let response = wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
     if response.success {
