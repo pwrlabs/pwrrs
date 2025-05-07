@@ -1,31 +1,45 @@
 use crate::config::falcon::Falcon;
 use crate::transaction::{NewTransactionData, types::Transaction};
 use pqcrypto_falcon::{falcon512 as falcon512_pqcrypto};
-use falcon_rust::{falcon512 as falcon512_rust};
 use pqcrypto_traits::sign::*;
-use std::fs;
-use std::io::Read;
-use std::path::Path;
-use std::error::Error;
 use hex;
 use sha3::{Digest, Keccak224};
 use crate::wallet::types::Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
 use crate::wallet::keys::NODE_URL;
-use bip39::{Mnemonic, MnemonicType, Language};
-use rand::thread_rng;
-use rand::Rng;
+use bip39::{Mnemonic, Language};
+use rand::{thread_rng, RngCore};
 use hmac::Hmac;
 use pbkdf2::pbkdf2;
 use sha2::Sha512;
+use crate::config::aes256::AES256;
 
 impl Wallet {
-    pub fn new_with_rpc_url(rpc_url: &str) -> Self {
-        let mut entropy = [0u8; 32];
-        thread_rng().fill(&mut entropy);
+    pub fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
+        // Validate word count
+        if ![12, 15, 18, 21, 24].contains(&word_count) {
+            panic!("Word count must be one of 12, 15, 18, 21, or 24");
+        }
+
+        // Calculate entropy bytes based on word count
+        let entropy_bytes = match word_count {
+            12 => 16, // 128 bits
+            15 => 20, // 160 bits
+            18 => 24, // 192 bits
+            21 => 28, // 224 bits
+            24 => 32, // 256 bits
+            _ => unreachable!(),
+        };
+
+        // Generate random entropy
+        let mut entropy = vec![0u8; entropy_bytes];
+        thread_rng().fill_bytes(&mut entropy);
         
-        let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
-        let phrase: &str = mnemonic.phrase();
+        // Create mnemonic from entropy
+        let mnemonic = Mnemonic::from_entropy(&entropy, Language::English)
+            .map_err(|_| "Failed to generate mnemonic").unwrap();
+        let phrase = mnemonic.phrase();
+        
         let seed = Self::generate_seed(phrase);
         let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
         
@@ -36,6 +50,7 @@ impl Wallet {
             public_key: public_key.to_bytes().to_vec(),
             private_key: secret_key.to_bytes().to_vec(),
             address: address,
+            seed_phrase: phrase.as_bytes().to_vec(),
             rpc_url: rpc_url.to_string(),
         }
     }
@@ -51,39 +66,17 @@ impl Wallet {
             public_key: public_key.to_bytes().to_vec(),
             private_key: secret_key.to_bytes().to_vec(),
             address: address,
+            seed_phrase: seed_phrase.as_bytes().to_vec(),
             rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn new_random() -> Self {
-        Self::new_with_rpc_url(NODE_URL)
+    pub fn new_random(word_count: u8) -> Self {
+        Self::new_random_with_rpc_url(word_count, NODE_URL)
     }
 
     pub fn new(seed_phrase: &str) -> Self {
         Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL)
-    }
-
-    pub fn from_keys_with_rpc_url(public_key: &str, secret_key: &str, rpc_url: &str) -> Self {
-        let public_key_bytes = hex::decode(public_key).unwrap();
-        let secret_key_bytes = hex::decode(secret_key).unwrap();
-
-        let public_key = falcon512_rust::PublicKey::from_bytes(&public_key_bytes).unwrap();
-        let secret_key = falcon512_rust::SecretKey::from_bytes(&secret_key_bytes).unwrap();
-
-        // Get the hash of the public key
-        let hash = Self::hash224(&public_key.to_bytes().to_vec());
-        let address = hash[0..20].to_vec();
-
-        Self {
-            public_key: public_key.to_bytes().to_vec(),
-            private_key: secret_key.to_bytes().to_vec(),
-            address: address,
-            rpc_url: rpc_url.to_string(),
-        }
-    }
-
-    pub fn from_keys(public_key: &str, secret_key: &str) -> Self {
-        Self::from_keys_with_rpc_url(public_key, secret_key, NODE_URL)
     }
 
     pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
@@ -97,70 +90,27 @@ impl Wallet {
         Falcon::verify_512(&message, &signature, &public_key)
     }
 
-    pub fn store_wallet<P: AsRef<Path>>(&self, file_path: P) -> Result<(), Box<dyn Error>> {    
-        let mut buffer = Vec::new();
+    pub fn store_wallet(&self, path: &str, password: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let seed_phrase: Vec<u8> = self.seed_phrase.clone();
 
-        buffer.extend_from_slice(&(self.public_key.len() as u32).to_be_bytes());
-        buffer.extend_from_slice(&self.public_key);
-        
-        buffer.extend_from_slice(&(self.private_key.len() as u32).to_be_bytes());
-        buffer.extend_from_slice(&self.private_key);
-    
-        fs::write(file_path, buffer)?;
-        
+        let encrypted_private_key = AES256::encrypt(&seed_phrase, password)
+            .map_err(|e| format!("Encryption error: {:?}", e))?;
+
+        std::fs::write(path, encrypted_private_key)?;
+
         Ok(())
     }
 
-    pub fn load_wallet_with_rpc_url<P: AsRef<Path>>(file_path: P, rpc_url: &str) -> Result<Self, Box<dyn Error>> {
-        let data = fs::read(file_path)?;
-        if data.len() < 8 { // At minimum we need two 4-byte length fields
-            return Err(format!("File too small: {} bytes", data.len()).into());
-        }
-    
-        let mut cursor = std::io::Cursor::new(&data);
-        
-        let mut pub_length_bytes = [0u8; 4];
-        cursor.read_exact(&mut pub_length_bytes)?;
-        let pub_length = u32::from_be_bytes(pub_length_bytes) as usize;
-        
-        if pub_length == 0 || pub_length > 2048 {
-            return Err(format!("Invalid public key length: {}", pub_length).into());
-        }
-        
-        if cursor.position() as usize + pub_length > data.len() {
-            return Err(format!("File too small for public key of length {}", pub_length).into());
-        }
-        
-        let mut public_key_bytes = vec![0u8; pub_length];
-        cursor.read_exact(&mut public_key_bytes)?;
-        
-        if cursor.position() as usize + 4 > data.len() {
-            return Err("File too small for secret key length".into());
-        }
-        
-        let mut sec_length_bytes = [0u8; 4];
-        cursor.read_exact(&mut sec_length_bytes)?;
-        let sec_length = u32::from_be_bytes(sec_length_bytes) as usize;
-        
-        if sec_length == 0 || sec_length > 4096 {
-            return Err(format!("Invalid secret key length: {}", sec_length).into());
-        }
-        
-        if cursor.position() as usize + sec_length > data.len() {
-            return Err(format!("File too small for secret key of length {}", sec_length).into());
-        }
-        
-        let mut secret_key_bytes = vec![0u8; sec_length];
-        cursor.read_exact(&mut secret_key_bytes)?;
-        
-        let public_key = hex::encode(public_key_bytes);
-        let secret_key = hex::encode(secret_key_bytes);
-        
-        Ok(Self::from_keys_with_rpc_url(&public_key, &secret_key, rpc_url))
+    pub fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
+        let encrypted_data = std::fs::read(path).ok()?;
+        let seed_phrase = AES256::decrypt(&encrypted_data, password).ok()?;
+        let seed_phrase_str = String::from_utf8(seed_phrase).ok()?;
+
+        Some(Self::new_with_rpc_url_and_phrase(seed_phrase_str.as_str(), rpc_url))
     }
 
-    pub fn load_wallet<P: AsRef<Path>>(file_path: P) -> Result<Self, Box<dyn Error>> {
-        Self::load_wallet_with_rpc_url(file_path, NODE_URL)
+    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        Self::load_wallet_with_rpc_url(path, password, NODE_URL)
     }
 
     pub fn get_address(&self) -> String {
@@ -173,6 +123,10 @@ impl Wallet {
 
     pub fn get_private_key(&self) -> Vec<u8> {
         self.private_key.clone()
+    }
+
+    pub fn get_seed_phrase(&self) -> String {
+        String::from_utf8(self.seed_phrase.clone()).ok().unwrap()
     }
 
     pub async fn get_balance(&self) -> u64 {

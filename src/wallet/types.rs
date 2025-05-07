@@ -11,5 +11,6 @@ pub struct Wallet {
     pub public_key: Vec<u8>,
     pub private_key: Vec<u8>,
     pub address: Vec<u8>,
+    pub seed_phrase: Vec<u8>,
     pub rpc_url: String,
 }
