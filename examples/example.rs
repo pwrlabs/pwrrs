@@ -7,9 +7,9 @@ use pwr_rs::{
 async fn main() {
     let seed_phrase = "your seed phrase here";
     let wallet = Wallet::new(seed_phrase);
-    wallet.store_wallet("example_wallet.dat").unwrap();
+    wallet.store_wallet("example_wallet.dat", "your_password_here").unwrap();
 
-    let wallet = Wallet::load_wallet("example_wallet.dat").expect("Failed to load wallet");
+    let wallet = Wallet::load_wallet("example_wallet.dat", "your_password_here").expect("Failed to load wallet");
 
     let address = wallet.get_address();
     println!("Address: {address}");
