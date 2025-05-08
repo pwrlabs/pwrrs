@@ -56,7 +56,13 @@ use pwr_rs::{
 let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
 ```
 
-**Generate a new wallet:**
+**Generate a new random wallet:**
+
+```rust
+let wallet = Wallet::new_random(12);
+```
+
+**Import wallet by Seed Phrase:**
 
 ```rust
 let seed_phrase = "your seed phrase here";
@@ -69,6 +75,12 @@ let wallet = Wallet::new(seed_phrase);
 let address = wallet.get_address();
 ```
 
+**Get wallet seed phrase:**
+
+```rust
+let seed_phrase = wallet.get_seed_phrase();
+```
+
 **Get wallet balance:**
 
 ```rust
@@ -78,7 +90,7 @@ let balance = wallet.get_balance().await;
 **Transfer PWR tokens:**
 
 ```rust
-wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
+wallet.transfer_pwr("recipientAddress".to_string(), "amount", "fee_per_byte").await;
 ```
 
 Sending a transcation to the PWR Chain returns a Response object, which specified if the transaction was a success, and returns relevant data.
@@ -89,8 +101,10 @@ use pwr_rs::Wallet;
 async fn main() {
     let seed_phrase = "your seed phrase here";
     let wallet = Wallet::new(seed_phrase);
+    let amount = 1000;
+    let fee_per_byte = (wallet.get_rpc().await).get_fee_per_byte().await.unwrap();
 
-    let response = wallet.transfer_pwr("recipientAddress".to_string(), 1000).await;
+    let response = wallet.transfer_pwr("recipientAddress".to_string(), amount, fee_per_byte).await;
     if response.success {
         println!("Transaction Hash: {}", response.data.unwrap());
     }
@@ -102,13 +116,15 @@ async fn main() {
 ```rust
 use pwr_rs::Wallet;
 async fn main() {
-    let private_key = "0xac0974bec...f80";
-    let wallet = Wallet::from_hex(&private_key).unwrap();
+    let seed_phrase = "your seed phrase here";
+    let wallet = Wallet::new(seed_phrase);
 
+    let vida_id = 123;
     let data = vec!["Hello World!"];
     let data_as_bytes: Vec<u8> = data.into_iter().flat_map(|s| s.as_bytes().to_vec()).collect();
+    let fee_per_byte = (wallet.get_rpc().await).get_fee_per_byte().await.unwrap();
 
-    let response = wallet.send_vida_data(123, data_as_bytes).await;
+    let response = wallet.send_vida_data(vida_id, data_as_bytes, fee_per_byte).await;
     if response.success {
         println!("Transaction Hash: {}", response.data.unwrap());
     }
@@ -157,6 +173,6 @@ You can also join our dedicated channel for [pwr-rs](https://discord.com/channel
 
 ## 📜 License
 
-Copyright (c) 2024 PWR Labs
+Copyright (c) 2025 PWR Labs
 
 Licensed under the [MIT license](https://github.com/pwrlabs/pwrrs/blob/main/LICENSE).
