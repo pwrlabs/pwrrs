@@ -5,11 +5,11 @@ use pwr_rs::{
 
 #[tokio::main]
 async fn main() {
-    let seed_phrase = "your seed phrase here";
-    let wallet = Wallet::new(seed_phrase);
+    let seed_phrase = "demand april length soap cash concert shuffle result force mention fringe slim";
+    let wallet = Wallet::new(seed_phrase).await;
     wallet.store_wallet("example_wallet.dat", "your_password_here").unwrap();
 
-    let wallet = Wallet::load_wallet("example_wallet.dat", "your_password_here").expect("Failed to load wallet");
+    let wallet = Wallet::load_wallet("example_wallet.dat", "your_password_here").await.unwrap();
 
     let address = wallet.get_address();
     println!("Address: {address}");
@@ -30,9 +30,9 @@ async fn main() {
         let latest_block = rpc.get_latest_block().await.unwrap();
         println!("LatestBlock: {latest_block}");
 
-        let start_block = 415;
-        let end_block = 430;
-        let vida_id = 1234;
+        let start_block = 9079;
+        let end_block = 9086;
+        let vida_id = 123;
         let transactions = rpc.get_vida_data_transactions(start_block, end_block, vida_id).await.unwrap();
         println!("VidaData: {:?}", hex::encode(&transactions[0].data));
 

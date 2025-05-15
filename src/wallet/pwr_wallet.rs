@@ -7,76 +7,61 @@ use sha3::{Digest, Keccak224};
 use crate::wallet::types::Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
 use crate::wallet::keys::NODE_URL;
-use bip39::{Mnemonic, Language};
-use rand::{thread_rng, RngCore};
-use hmac::Hmac;
-use pbkdf2::pbkdf2;
-use sha2::Sha512;
 use crate::config::aes256::AES256;
+use crate::config::falcon_api::FalconAPI;
+
+const FALCON_API: &str = "http://localhost:3000/";
 
 impl Wallet {
-    pub fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
+    pub async fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
         // Validate word count
         if ![12, 15, 18, 21, 24].contains(&word_count) {
             panic!("Word count must be one of 12, 15, 18, 21, or 24");
         }
 
-        // Calculate entropy bytes based on word count
-        let entropy_bytes = match word_count {
-            12 => 16, // 128 bits
-            15 => 20, // 160 bits
-            18 => 24, // 192 bits
-            21 => 28, // 224 bits
-            24 => 32, // 256 bits
-            _ => unreachable!(),
-        };
+        let keypair = FalconAPI::new(FALCON_API).generate_random_keypair(word_count).await.unwrap();
+        println!("Keypair: {:?}", keypair);
 
-        // Generate random entropy
-        let mut entropy = vec![0u8; entropy_bytes];
-        thread_rng().fill_bytes(&mut entropy);
-        
-        // Create mnemonic from entropy
-        let mnemonic = Mnemonic::from_entropy(&entropy, Language::English)
-            .map_err(|_| "Failed to generate mnemonic").unwrap();
-        let phrase = mnemonic.phrase();
-        
-        let seed = Self::generate_seed(phrase);
-        let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
-        
-        let hash = Self::hash224(&public_key.to_bytes().to_vec());
+        let public_key_bytes = hex::decode(keypair.0).unwrap();
+        let secret_key_bytes = hex::decode(keypair.1).unwrap();
+        let seed_phrase = keypair.2;
+
+        let hash = Self::hash224(&public_key_bytes[1..].to_vec());
         let address = hash[0..20].to_vec();
 
         Self {
-            public_key: public_key.to_bytes().to_vec(),
-            private_key: secret_key.to_bytes().to_vec(),
-            address: address,
-            seed_phrase: phrase.as_bytes().to_vec(),
-            rpc_url: rpc_url.to_string(),
-        }
-    }
-
-    pub fn new_with_rpc_url_and_phrase(seed_phrase: &str, rpc_url: &str) -> Self {
-        let seed = Self::generate_seed(seed_phrase);
-        let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
-
-        let hash = Self::hash224(&public_key.to_bytes().to_vec());
-        let address = hash[0..20].to_vec();
-
-        Self {
-            public_key: public_key.to_bytes().to_vec(),
-            private_key: secret_key.to_bytes().to_vec(),
+            public_key: public_key_bytes.to_vec(),
+            private_key: secret_key_bytes.to_vec(),
             address: address,
             seed_phrase: seed_phrase.as_bytes().to_vec(),
             rpc_url: rpc_url.to_string(),
         }
     }
 
-    pub fn new_random(word_count: u8) -> Self {
-        Self::new_random_with_rpc_url(word_count, NODE_URL)
+    pub async fn new_with_rpc_url_and_phrase(seed_phrase: &str, rpc_url: &str) -> Self {
+        let keypair = FalconAPI::new(FALCON_API).generate_keypair(seed_phrase).await.unwrap();
+
+        let public_key_bytes = hex::decode(keypair.0).unwrap();
+        let secret_key_bytes = hex::decode(keypair.1).unwrap();
+
+        let hash = Self::hash224(&public_key_bytes[1..].to_vec());
+        let address = hash[0..20].to_vec();
+
+        Self {
+            public_key: public_key_bytes.to_vec(),
+            private_key: secret_key_bytes.to_vec(),
+            address: address,
+            seed_phrase: seed_phrase.as_bytes().to_vec(),
+            rpc_url: rpc_url.to_string(),
+        }
     }
 
-    pub fn new(seed_phrase: &str) -> Self {
-        Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL)
+    pub async fn new_random(word_count: u8) -> Self {
+        Self::new_random_with_rpc_url(word_count, NODE_URL).await
+    }
+
+    pub async fn new(seed_phrase: &str) -> Self {
+        Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL).await
     }
 
     pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
@@ -101,16 +86,16 @@ impl Wallet {
         Ok(())
     }
 
-    pub fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
+    pub async fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
         let encrypted_data = std::fs::read(path).ok()?;
         let seed_phrase = AES256::decrypt(&encrypted_data, password).ok()?;
         let seed_phrase_str = String::from_utf8(seed_phrase).ok()?;
 
-        Some(Self::new_with_rpc_url_and_phrase(seed_phrase_str.as_str(), rpc_url))
+        Some(Self::new_with_rpc_url_and_phrase(seed_phrase_str.as_str(), rpc_url).await)
     }
 
-    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
-        Self::load_wallet_with_rpc_url(path, password, NODE_URL)
+    pub async fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        Self::load_wallet_with_rpc_url(path, password, NODE_URL).await
     }
 
     pub fn get_address(&self) -> String {
@@ -765,15 +750,15 @@ impl Wallet {
         hasher.finalize().to_vec()
     }
 
-    fn generate_seed(phrase: &str) -> Vec<u8> {
-        let salt = format!("mnemonic");
-        let mut seed = vec![0u8; 64];
-        pbkdf2::<Hmac<Sha512>>(
-            phrase.as_bytes(),
-            salt.as_bytes(),
-            2048,
-            &mut seed
-        ).unwrap();
-        seed
-    }
+    // fn generate_seed(phrase: &str) -> Vec<u8> {
+    //     let salt = format!("mnemonic");
+    //     let mut seed = vec![0u8; 64];
+    //     pbkdf2::<Hmac<Sha512>>(
+    //         phrase.as_bytes(),
+    //         salt.as_bytes(),
+    //         2048,
+    //         &mut seed
+    //     ).unwrap();
+    //     seed
+    // }
 }
