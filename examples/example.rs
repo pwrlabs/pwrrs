@@ -6,10 +6,10 @@ use pwr_rs::{
 #[tokio::main]
 async fn main() {
     let seed_phrase = "demand april length soap cash concert shuffle result force mention fringe slim";
-    let wallet = Wallet::new(seed_phrase).await;
+    let wallet = Wallet::new(seed_phrase);
     wallet.store_wallet("example_wallet.dat", "your_password_here").unwrap();
 
-    let wallet = Wallet::load_wallet("example_wallet.dat", "your_password_here").await.unwrap();
+    let wallet = Wallet::load_wallet("example_wallet.dat", "your_password_here").expect("Failed to load wallet");
 
     let address = wallet.get_address();
     println!("Address: {address}");
@@ -60,8 +60,8 @@ async fn main() {
         // let all_validators = rpc.get_all_validators().await.unwrap();
         // println!("AllValidators: {all_validators:?}");
 
-        let standby_validators = rpc.get_standby_validators().await.unwrap();
-        println!("StandbyValidators: {standby_validators:?}");
+        // let standby_validators = rpc.get_standby_validators().await.unwrap();
+        // println!("StandbyValidators: {standby_validators:?}");
 
         // let active_validators = rpc.get_active_validators().await.unwrap();
         // println!("ActiveValidators: {active_validators:?}");

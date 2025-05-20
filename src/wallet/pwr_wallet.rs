@@ -15,7 +15,7 @@ use pbkdf2::pbkdf2;
 use sha2::Sha512;
 
 impl Wallet {
-    pub async fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
+    pub fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
         // Validate word count
         if ![12, 15, 18, 21, 24].contains(&word_count) {
             panic!("Word count must be one of 12, 15, 18, 21, or 24");
@@ -55,7 +55,7 @@ impl Wallet {
         }
     }
 
-    pub async fn new_with_rpc_url_and_phrase(seed_phrase: &str, rpc_url: &str) -> Self {
+    pub fn new_with_rpc_url_and_phrase(seed_phrase: &str, rpc_url: &str) -> Self {
         let seed = Self::generate_seed(seed_phrase);
         let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
 
@@ -71,12 +71,12 @@ impl Wallet {
         }
     }
 
-    pub async fn new_random(word_count: u8) -> Self {
-        Self::new_random_with_rpc_url(word_count, NODE_URL).await
+    pub fn new_random(word_count: u8) -> Self {
+        Self::new_random_with_rpc_url(word_count, NODE_URL)
     }
 
-    pub async fn new(seed_phrase: &str) -> Self {
-        Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL).await
+    pub fn new(seed_phrase: &str) -> Self {
+        Self::new_with_rpc_url_and_phrase(seed_phrase, NODE_URL)
     }
 
     pub fn sign(&self, message: Vec<u8>) -> Vec<u8> {
@@ -101,16 +101,16 @@ impl Wallet {
         Ok(())
     }
 
-    pub async fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
+    pub fn load_wallet_with_rpc_url(path: &str, password: &str, rpc_url: &str) -> Option<Self> {
         let encrypted_data = std::fs::read(path).ok()?;
         let seed_phrase = AES256::decrypt(&encrypted_data, password).ok()?;
         let seed_phrase_str = String::from_utf8(seed_phrase).ok()?;
 
-        Some(Self::new_with_rpc_url_and_phrase(seed_phrase_str.as_str(), rpc_url).await)
+        Some(Self::new_with_rpc_url_and_phrase(seed_phrase_str.as_str(), rpc_url))
     }
 
-    pub async fn load_wallet(path: &str, password: &str) -> Option<Self> {
-        Self::load_wallet_with_rpc_url(path, password, NODE_URL).await
+    pub fn load_wallet(path: &str, password: &str) -> Option<Self> {
+        Self::load_wallet_with_rpc_url(path, password, NODE_URL)
     }
 
     pub fn get_address(&self) -> String {
