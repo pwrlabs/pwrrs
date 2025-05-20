@@ -30,8 +30,8 @@ async fn main() {
         let latest_block = rpc.get_latest_block().await.unwrap();
         println!("LatestBlock: {latest_block}");
 
-        let start_block = 9079;
-        let end_block = 9086;
+        let start_block = 85411;
+        let end_block = 85420;
         let vida_id = 123;
         let transactions = rpc.get_vida_data_transactions(start_block, end_block, vida_id).await.unwrap();
         println!("VidaData: {:?}", hex::encode(&transactions[0].data));
@@ -57,14 +57,14 @@ async fn main() {
         let active_validators_count = rpc.get_active_validator_count().await.unwrap();
         println!("ActiveValidatorsCount: {active_validators_count}");
 
-        let all_validators = rpc.get_all_validators().await.unwrap();
-        println!("AllValidators: {all_validators:?}");
+        // let all_validators = rpc.get_all_validators().await.unwrap();
+        // println!("AllValidators: {all_validators:?}");
 
         let standby_validators = rpc.get_standby_validators().await.unwrap();
         println!("StandbyValidators: {standby_validators:?}");
 
-        let active_validators = rpc.get_active_validators().await.unwrap();
-        println!("ActiveValidators: {active_validators:?}");
+        // let active_validators = rpc.get_active_validators().await.unwrap();
+        // println!("ActiveValidators: {active_validators:?}");
 
         let tx = wallet.transfer_pwr(
             "0x3B3B69093879E7B6F28366FA3C32762590FF547E".to_string(),
