@@ -1110,7 +1110,7 @@ dependencies = [
 
 [[package]]
 name = "pwr-rs"
-version = "0.3.4-alpha2"
+version = "0.3.4"
 dependencies = [
  "aes",
  "borsh",
