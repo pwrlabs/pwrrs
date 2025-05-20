@@ -22,7 +22,7 @@ async fn main() {
 
     #[cfg(feature = "rpc")]
     {
-        let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
+        let rpc = RPC::new("https://pwrrpc.pwrlabs.io").await.unwrap();
 
         let fee_per_byte = rpc.get_fee_per_byte().await.unwrap();
         println!("FeePerByte: {fee_per_byte}");
@@ -57,14 +57,14 @@ async fn main() {
         let active_validators_count = rpc.get_active_validator_count().await.unwrap();
         println!("ActiveValidatorsCount: {active_validators_count}");
 
-        // let all_validators = rpc.get_all_validators().await.unwrap();
-        // println!("AllValidators: {all_validators:?}");
+        let all_validators = rpc.get_all_validators().await.unwrap();
+        println!("AllValidators: {all_validators:?}");
 
-        // let standby_validators = rpc.get_standby_validators().await.unwrap();
-        // println!("StandbyValidators: {standby_validators:?}");
+        let standby_validators = rpc.get_standby_validators().await.unwrap();
+        println!("StandbyValidators: {standby_validators:?}");
 
-        // let active_validators = rpc.get_active_validators().await.unwrap();
-        // println!("ActiveValidators: {active_validators:?}");
+        let active_validators = rpc.get_active_validators().await.unwrap();
+        println!("ActiveValidators: {active_validators:?}");
 
         let tx = wallet.transfer_pwr(
             "0x3B3B69093879E7B6F28366FA3C32762590FF547E".to_string(),
