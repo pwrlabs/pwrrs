@@ -5,7 +5,7 @@ use pwr_rs::{
 
 #[tokio::main]
 async fn main() {
-    let seed_phrase = "your seed phrase here";
+    let seed_phrase = "demand april length soap cash concert shuffle result force mention fringe slim";
     let wallet = Wallet::new(seed_phrase);
     wallet.store_wallet("example_wallet.dat", "your_password_here").unwrap();
 
@@ -22,7 +22,7 @@ async fn main() {
 
     #[cfg(feature = "rpc")]
     {
-        let rpc = RPC::new("https://pwrrpc.pwrlabs.io/").await.unwrap();
+        let rpc = RPC::new("https://pwrrpc.pwrlabs.io").await.unwrap();
 
         let fee_per_byte = rpc.get_fee_per_byte().await.unwrap();
         println!("FeePerByte: {fee_per_byte}");
@@ -30,9 +30,9 @@ async fn main() {
         let latest_block = rpc.get_latest_block().await.unwrap();
         println!("LatestBlock: {latest_block}");
 
-        let start_block = 415;
-        let end_block = 430;
-        let vida_id = 1234;
+        let start_block = 85411;
+        let end_block = 85420;
+        let vida_id = 123;
         let transactions = rpc.get_vida_data_transactions(start_block, end_block, vida_id).await.unwrap();
         println!("VidaData: {:?}", hex::encode(&transactions[0].data));
 

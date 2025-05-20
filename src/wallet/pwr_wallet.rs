@@ -7,12 +7,12 @@ use sha3::{Digest, Keccak224};
 use crate::wallet::types::Wallet;
 use crate::rpc::{RPC, BroadcastResponse};
 use crate::wallet::keys::NODE_URL;
+use crate::config::aes256::AES256;
 use bip39::{Mnemonic, Language};
 use rand::{thread_rng, RngCore};
 use hmac::Hmac;
 use pbkdf2::pbkdf2;
 use sha2::Sha512;
-use crate::config::aes256::AES256;
 
 impl Wallet {
     pub fn new_random_with_rpc_url(word_count: u8, rpc_url: &str) -> Self {
@@ -42,13 +42,13 @@ impl Wallet {
         
         let seed = Self::generate_seed(phrase);
         let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
-        
-        let hash = Self::hash224(&public_key.to_bytes().to_vec());
+
+        let hash = Self::hash224(&public_key[1..].to_vec());
         let address = hash[0..20].to_vec();
 
         Self {
-            public_key: public_key.to_bytes().to_vec(),
-            private_key: secret_key.to_bytes().to_vec(),
+            public_key: public_key.to_vec(),
+            private_key: secret_key.to_vec(),
             address: address,
             seed_phrase: phrase.as_bytes().to_vec(),
             rpc_url: rpc_url.to_string(),
@@ -59,12 +59,12 @@ impl Wallet {
         let seed = Self::generate_seed(seed_phrase);
         let (public_key, secret_key) = Falcon::generate_keypair_512_from_seed(&seed);
 
-        let hash = Self::hash224(&public_key.to_bytes().to_vec());
+        let hash = Self::hash224(&public_key[1..].to_vec());
         let address = hash[0..20].to_vec();
 
         Self {
-            public_key: public_key.to_bytes().to_vec(),
-            private_key: secret_key.to_bytes().to_vec(),
+            public_key: public_key.to_vec(),
+            private_key: secret_key.to_vec(),
             address: address,
             seed_phrase: seed_phrase.as_bytes().to_vec(),
             rpc_url: rpc_url.to_string(),
