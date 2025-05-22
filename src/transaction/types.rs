@@ -686,6 +686,58 @@ pub struct VidaDataTransaction {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct TransactionResponse {
+    #[serde(default)]
+    pub identifier: u32,
+
+    #[serde(default)]
+    pub paid_total_fee: u64,
+
+    #[serde(default)]
+    pub amount: u64,
+
+    #[serde(default)]
+    pub paid_action_fee: u64,
+
+    #[serde(default)]
+    pub nonce: u32,
+
+    #[serde(default = "default_hex")]
+    pub transaction_hash: String,
+
+    #[serde(default)]
+    pub time_stamp: u64,
+    
+    #[serde(default)]
+    pub fee_per_byte: u64,
+
+    #[serde(default)]
+    pub size: u32,
+
+    #[serde(default = "default_hex")]
+    pub sender: String,
+
+    #[serde(default)]
+    pub success: bool,
+
+    #[serde(default)]
+    pub block_number: u32,
+
+    #[serde(default)]
+    pub position_in_the_block: u32,
+
+    #[serde(default)]
+    pub vida_id: u64,
+
+    #[serde(default = "default_hex")]
+    pub receiver: String,
+
+    #[serde(default, with = "hex_serde")]
+    pub data: Vec<u8>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Penalty {
     pub withdraw_time: u64,
     pub penalty: String

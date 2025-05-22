@@ -24,6 +24,13 @@ async fn main() {
     {
         let rpc = RPC::new("https://pwrrpc.pwrlabs.io").await.unwrap();
 
+        let block = rpc.get_block_by_number(123741).await.unwrap();
+        // prints the sender address from every transaction in the block
+        for (index, txs) in block.transactions.iter().enumerate() {
+            let tx = rpc.get_transaction_by_hash(&txs.transaction_hash).await.unwrap();
+            println!("Sender {}: {}", index, tx.sender);
+        }
+
         let fee_per_byte = rpc.get_fee_per_byte().await.unwrap();
         println!("FeePerByte: {fee_per_byte}");
 

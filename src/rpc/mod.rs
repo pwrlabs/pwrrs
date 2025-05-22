@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use crate::{
     block::Block,
-    transaction::types::{VidaDataTransaction, Penalty},
+    transaction::types::{VidaDataTransaction, Penalty, TransactionResponse},
     validator::Validator
 };
 
@@ -684,6 +684,20 @@ impl RPC {
         ))
         .await
         .map(|r: Response| r.delegators)
+    }
+
+    pub async fn get_transaction_by_hash(
+        &self,
+        transaction_hash: &str
+    ) -> Result<TransactionResponse, RpcError> {
+        #[derive(Deserialize)]
+        struct Response {
+            transaction: TransactionResponse,
+        }
+
+        self.call_rpc_get(&format!("/transactionByHash?transactionHash={}", transaction_hash))
+            .await
+            .map(|r: Response| r.transaction)
     }
 
     /// Broadcasts a transaction to the network via a specified RPC node.
