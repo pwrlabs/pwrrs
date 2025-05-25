@@ -3,7 +3,7 @@ pub mod hex_serde;
 pub mod stream;
 
 use self::types::Transaction;
-pub use self::types::NewTransactionData;
+pub use self::types::{NewTransactionData, VidaDataTransaction};
 use crate::wallet::types::Wallet;
 use crate::config::falcon::Falcon;
 use pqcrypto_falcon::falcon512;
