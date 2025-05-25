@@ -11,7 +11,7 @@ use pqcrypto_traits::sign::*;
 use sha3::{Digest, Keccak256};
 
 impl NewTransactionData {
-    pub fn falcon512_serialize_for_broadcast(
+    pub fn serialize_for_broadcast(
         &self,
         nonce: u32,
         chain_id: u8,
