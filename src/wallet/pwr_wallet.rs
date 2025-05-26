@@ -143,7 +143,7 @@ impl Wallet {
         let nonce = (self.get_rpc().await).get_nonce_of_address(
             &self.get_address()
         ).await.unwrap();
-        let txn_bytes = tx.falcon512_serialize_for_broadcast(nonce, (self.get_rpc().await).chain_id, fee_per_byte, self).unwrap();
+        let txn_bytes = tx.serialize_for_broadcast(nonce, (self.get_rpc().await).chain_id, fee_per_byte, self).unwrap();
         return txn_bytes;
     }
 

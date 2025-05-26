@@ -3,7 +3,7 @@ pub mod hex_serde;
 pub mod stream;
 
 use self::types::Transaction;
-pub use self::types::NewTransactionData;
+pub use self::types::{NewTransactionData, VidaDataTransaction};
 use crate::wallet::types::Wallet;
 use crate::config::falcon::Falcon;
 use pqcrypto_falcon::falcon512;
@@ -11,7 +11,7 @@ use pqcrypto_traits::sign::*;
 use sha3::{Digest, Keccak256};
 
 impl NewTransactionData {
-    pub fn falcon512_serialize_for_broadcast(
+    pub fn serialize_for_broadcast(
         &self,
         nonce: u32,
         chain_id: u8,
