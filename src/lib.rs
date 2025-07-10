@@ -28,3 +28,5 @@ mod config;
 pub use wallet::types::{PublicKey, Wallet};
 pub use rpc::RPC;
 pub use transaction::types::VidaDataTransaction;
+
+pub use config::merkle_tree;
