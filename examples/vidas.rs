@@ -28,7 +28,7 @@ fn handler(txn: VidaDataTransaction) {
 
 #[tokio::main]
 async fn main() {
-    let rpc = RPC::new("http://46.101.151.203:8085/").await.unwrap();
+    let rpc = RPC::new("https://pwrrpc.pwrlabs.io").await.unwrap();
     let rpc = Arc::new(rpc);
     let vida_id = 1; // Replace with your VIDA's ID
 
@@ -36,7 +36,7 @@ async fn main() {
     // we will start reading transactions startng from the latest PWR Chain block
     let starting_block = rpc.get_latest_block_number().await.unwrap();
 
-    let subscription = rpc.subscribe_to_vida_transactions(vida_id, starting_block, handler);
+    let subscription = rpc.subscribe_to_vida_transactions(vida_id, starting_block, handler, None);
 
     // To pause, resume, and stop the subscription
     subscription.pause();

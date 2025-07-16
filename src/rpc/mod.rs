@@ -7,9 +7,9 @@ use sha3::{Digest, Keccak256};
 use std::collections::HashMap;
 use url::Url;
 
-pub use self::types::{RPC, BroadcastResponse, ResponseData, BroadcastRequest};
+pub use self::types::{RPC, BroadcastResponse, ResponseData, BroadcastRequest, block_saver};
 use self::types::RpcError;
-use types::{VidaTransactionSubscription, ProcessVidaTransactions};
+use types::{VidaTransactionSubscription, ProcessVidaTransactions, BlockSaver};
 use std::sync::Arc;
 
 use crate::{
@@ -19,6 +19,7 @@ use crate::{
 };
 
 const DEFAULT_CHAIN_ID: u8 = 0;
+const DEFAULT_POLL_INTERVAL: u64 = 100;
 
 impl RPC {
     /// Creates a new RPC.
@@ -780,6 +781,7 @@ impl RPC {
         vida_id: u64, 
         starting_block: u64,
         handler: ProcessVidaTransactions,
+        block_saver: Option<Box<dyn BlockSaver>>,
         _poll_interval: Option<u64>,
     ) -> VidaTransactionSubscription {
         let mut subscription = VidaTransactionSubscription::new(
@@ -787,7 +789,8 @@ impl RPC {
             vida_id,
             starting_block,
             handler,
-            _poll_interval.unwrap_or(100),
+            _poll_interval.unwrap_or(DEFAULT_POLL_INTERVAL),
+            block_saver,
         );
         subscription.start();
         subscription
@@ -798,11 +801,13 @@ impl RPC {
         vida_id: u64, 
         starting_block: u64,
         handler: ProcessVidaTransactions,
+        block_saver: Option<Box<dyn BlockSaver>>,
     ) -> VidaTransactionSubscription {
         self.subscribe_to_vida_transactions_with_poll_interval(
             vida_id,
             starting_block,
             handler,
+            block_saver,
             None
         )
     }
