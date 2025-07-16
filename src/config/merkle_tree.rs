@@ -249,9 +249,10 @@ impl Node {
         } else if self.right.is_none() {
             self.right = Some(leaf_hash);
         } else {
-            return Err(MerkleTreeError::InvalidArgument(
-                "Node already has both left and right children".to_string()
-            ));
+            // return Err(MerkleTreeError::InvalidArgument(
+            //     "Node already has both left and right children".to_string()
+            // ));
+            log::error!("Node already has both left and right children");
         }
         Ok(())
     }
