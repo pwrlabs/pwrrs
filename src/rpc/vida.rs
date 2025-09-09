@@ -130,7 +130,7 @@ impl VidaTransactionSubscription {
     pub fn pause(&self) {
         self.wants_to_pause.store(true, Ordering::SeqCst);
         
-        // Block until actually paused (matching Java behavior)
+        // Block until actually paused
         while !self.paused.load(Ordering::SeqCst) && self.running.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_millis(10));
         }
