@@ -23,10 +23,8 @@ pub mod validator;
 pub mod rpc;
 pub mod wallet;
 
-mod config;
+pub mod config;
 
 pub use wallet::types::{PublicKey, Wallet};
 pub use rpc::RPC;
 pub use transaction::types::VidaDataTransaction;
-
-pub use config::merkle_tree;
