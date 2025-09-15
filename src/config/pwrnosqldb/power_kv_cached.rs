@@ -1,4 +1,4 @@
-use crate::config::power_kv::{PowerKv, PowerKvError};
+use super::power_kv::{PowerKv, PowerKvError};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
