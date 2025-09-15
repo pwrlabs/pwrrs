@@ -2,6 +2,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Duration;
+use sha3::{Digest, Keccak256};
+use crate::config::aes256::AES256;
 
 #[derive(Debug)]
 pub enum PowerKvError {
@@ -70,7 +72,7 @@ impl PowerKv {
 
         Ok(PowerKv {
             client,
-            server_url: "https://pwrnosqlvida.pwrlabs.io/".to_string(),
+            server_url: "https://powerkvbe.pwrlabs.io".to_string(),
             project_id,
             secret,
         })
@@ -102,13 +104,90 @@ impl PowerKv {
         data.to_string().into_bytes()
     }
 
+    fn hash256(&self, input: &[u8]) -> Vec<u8> {
+        let mut hasher = Keccak256::new();
+        hasher.update(input);
+        hasher.finalize().to_vec()
+    }
+
+    fn pack_data(&self, key: &[u8], data: &[u8]) -> Vec<u8> {
+        let mut packed = Vec::new();
+        
+        // Pack key length (4 bytes, big-endian) + key bytes
+        packed.extend_from_slice(&(key.len() as u32).to_be_bytes());
+        packed.extend_from_slice(key);
+        
+        // Pack data length (4 bytes, big-endian) + data bytes
+        packed.extend_from_slice(&(data.len() as u32).to_be_bytes());
+        packed.extend_from_slice(data);
+        
+        packed
+    }
+
+    fn unpack_data(&self, packed_buffer: &[u8]) -> Result<(Vec<u8>, Vec<u8>), PowerKvError> {
+        if packed_buffer.len() < 8 {
+            return Err(PowerKvError::InvalidInput("Buffer too small for unpacking".to_string()));
+        }
+
+        let mut offset = 0;
+        
+        // Read key length (4 bytes, big-endian)
+        let key_length = u32::from_be_bytes([
+            packed_buffer[offset],
+            packed_buffer[offset + 1],
+            packed_buffer[offset + 2],
+            packed_buffer[offset + 3],
+        ]) as usize;
+        offset += 4;
+        
+        if offset + key_length > packed_buffer.len() {
+            return Err(PowerKvError::InvalidInput("Invalid key length in packed data".to_string()));
+        }
+        
+        // Read key bytes
+        let key = packed_buffer[offset..offset + key_length].to_vec();
+        offset += key_length;
+        
+        if offset + 4 > packed_buffer.len() {
+            return Err(PowerKvError::InvalidInput("Buffer too small for data length".to_string()));
+        }
+        
+        // Read data length (4 bytes, big-endian)
+        let data_length = u32::from_be_bytes([
+            packed_buffer[offset],
+            packed_buffer[offset + 1],
+            packed_buffer[offset + 2],
+            packed_buffer[offset + 3],
+        ]) as usize;
+        offset += 4;
+        
+        if offset + data_length > packed_buffer.len() {
+            return Err(PowerKvError::InvalidInput("Invalid data length in packed data".to_string()));
+        }
+        
+        // Read data bytes
+        let data = packed_buffer[offset..offset + data_length].to_vec();
+        
+        Ok((key, data))
+    }
+
     pub async fn put(&self, key: &[u8], data: &[u8]) -> Result<bool, PowerKvError> {
+        // Hash the key with Keccak256
+        let key_hash = self.hash256(key);
+        
+        // Pack the original key and data
+        let packed_data = self.pack_data(key, data);
+        
+        // Encrypt the packed data
+        let encrypted_data = AES256::encrypt(&packed_data, &self.secret)
+            .map_err(|e| PowerKvError::ServerError(format!("Encryption failed: {:?}", e)))?;
+
         let url = format!("{}/storeData", self.server_url);
         let payload = StoreDataRequest {
             project_id: self.project_id.clone(),
             secret: self.secret.clone(),
-            key: self.to_hex_string(key),
-            value: self.to_hex_string(data),
+            key: self.to_hex_string(&key_hash),
+            value: self.to_hex_string(&encrypted_data),
         };
 
         let response = self
@@ -128,12 +207,7 @@ impl PowerKv {
         if status.is_success() {
             Ok(true)
         } else {
-            let message = if let Ok(error_response) = serde_json::from_str::<ErrorResponse>(&response_text) {
-                error_response.message.unwrap_or_else(|| format!("HTTP {}", status.as_u16()))
-            } else {
-                format!("HTTP {} — {}", status.as_u16(), response_text)
-            };
-            Err(PowerKvError::ServerError(format!("storeData failed: {}", message)))
+            Err(PowerKvError::ServerError(format!("storeData failed: {} - {}", status.as_u16(), response_text)))
         }
     }
 
@@ -148,7 +222,9 @@ impl PowerKv {
     }
 
     pub async fn get_value(&self, key: &[u8]) -> Result<Vec<u8>, PowerKvError> {
-        let key_hex = self.to_hex_string(key);
+        // Hash the key with Keccak256
+        let key_hash = self.hash256(key);
+        let key_hex = self.to_hex_string(&key_hash);
         let url = format!("{}/getValue", self.server_url);
 
         let mut params = HashMap::new();
@@ -173,7 +249,23 @@ impl PowerKv {
             let response_obj: GetValueResponse = serde_json::from_str(&response_text)
                 .map_err(|_| PowerKvError::ServerError(format!("Unexpected response shape from /getValue: {}", response_text)))?;
             
-            self.from_hex_string(&response_obj.value)
+            // Handle both with/without 0x prefix
+            let clean_hex = if response_obj.value.starts_with("0x") || response_obj.value.starts_with("0X") {
+                &response_obj.value[2..]
+            } else {
+                &response_obj.value
+            };
+            
+            let encrypted_value = self.from_hex_string(clean_hex)?;
+            
+            // Decrypt the data
+            let decrypted_data = AES256::decrypt(&encrypted_value, &self.secret)
+                .map_err(|e| PowerKvError::ServerError(format!("Decryption failed: {:?}", e)))?;
+            
+            // Unpack the data to get original key and data
+            let (_original_key, actual_data) = self.unpack_data(&decrypted_data)?;
+            
+            Ok(actual_data)
         } else {
             let message = if let Ok(error_response) = serde_json::from_str::<ErrorResponse>(&response_text) {
                 error_response.message.unwrap_or_else(|| format!("HTTP {}", status.as_u16()))
